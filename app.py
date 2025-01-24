@@ -10,6 +10,7 @@ import aiohttp
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -213,26 +214,35 @@ def validate_key():
 @app.route('/admin')
 @admin_required
 def admin():
-    key_manager = KeyManager()
-    keys = key_manager.get_all_keys()
-    
-    # Load tokens
     try:
-        with open(TOKEN_FILE, 'r') as f:
-            tokens = f.read()
-    except:
-        tokens = ""
-    
-    # Load stats
-    stats = ShareStats.load()
-    
-    return render_template('admin.html', 
-        keys=keys, 
-        tokens=tokens, 
-        stats=stats,
-        active_keys=sum(1 for k in keys.values() if k['active']),
-        pending_keys=sum(1 for k in keys.values() if not k['active'])
-    )
+        key_manager = KeyManager()
+        keys = key_manager.get_all_keys()
+        
+        # Load tokens
+        try:
+            with open(TOKEN_FILE, 'r') as f:
+                tokens = f.read()
+        except:
+            tokens = ""
+        
+        # Load stats
+        stats = ShareStats.load()
+        
+        active_keys = sum(1 for k in keys.values() if k['active'])
+        pending_keys = sum(1 for k in keys.values() if not k['active'])
+        
+        return render_template('admin.html', 
+            keys=keys, 
+            tokens=tokens, 
+            stats=stats,
+            active_keys=active_keys,
+            pending_keys=pending_keys,
+            now=datetime.now
+        )
+    except Exception as e:
+        logger.error(f"Admin page error: {str(e)}")
+        flash('An error occurred while loading the admin page.')
+        return redirect(url_for('admin_login'))
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -340,6 +350,7 @@ def not_found_error(error):
 
 @app.errorhandler(500)
 def internal_error(error):
+    logger.error(f"Internal server error: {str(error)}")
     return render_template('500.html'), 500
 
 if __name__ == '__main__':
