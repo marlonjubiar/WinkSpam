@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WinkSpam - Share Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-gray-800 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="share"></i>
+                WinkSpam
+            </div>
+            <div>
+                <a href="/admin" class="hover:text-gray-300 flex items-center gap-2">
+                    <i data-lucide="shield"></i>
+                    Admin
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="min-h-screen container mx-auto py-8 px-4">
+        <div class="max-w-2xl mx-auto space-y-8">
+            <!-- Tool Info Card -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <i data-lucide="info" class="text-blue-500"></i>
+                    <h2 class="text-2xl font-bold text-gray-800">WinkSpam Share Tool</h2>
+                </div>
+                <div class="text-gray-600 space-y-2">
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="check-circle-2" class="text-green-500"></i>
+                        Automated Facebook Post Sharing
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="shield-check" class="text-green-500"></i>
+                        Secure Key Authentication
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="activity" class="text-green-500"></i>
+                        High Success Rate
+                    </p>
+                </div>
+            </div>
+
+            <!-- Authentication Section -->
+            <div id="keySection" class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <i data-lucide="key" class="text-yellow-500"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Authentication</h2>
+                </div>
+                <div id="keyInput" class="space-y-4">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="fingerprint" class="text-gray-400"></i>
+                        </div>
+                        <input type="text" id="key" placeholder="Enter your access key" 
+                               class="pl-10 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <button onclick="validateKey()" 
+                            class="w-full flex items-center justify-center gap-2 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                        <i data-lucide="unlock"></i>
+                        Validate Key
+                    </button>
+                    <div class="text-center">
+                        <span class="text-sm text-gray-500">Don't have a key?</span>
+                        <button onclick="generateKey()" 
+                                class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1 mx-auto mt-1">
+                            <i data-lucide="plus-circle"></i>
+                            Generate new key
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Share Section -->
+            <div id="shareSection" class="hidden bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <i data-lucide="share-2" class="text-green-500"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Share Configuration</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="hash" class="text-gray-400"></i>
+                        </div>
+                        <input type="text" id="postId" placeholder="Enter Post ID" 
+                               class="pl-10 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="repeat" class="text-gray-400"></i>
+                        </div>
+                        <input type="number" id="shareCount" placeholder="Number of shares (1-1000)" min="1" max="1000"
+                               class="pl-10 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <button onclick="startShare()" 
+                            class="w-full flex items-center justify-center gap-2 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                        <i data-lucide="play"></i>
+                        Start Share Process
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Section -->
+            <div id="status" class="hidden bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <i data-lucide="activity" class="text-blue-500"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Status</h2>
+                </div>
+                <div id="statusContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function showStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            const statusContent = document.getElementById('statusContent');
+            statusContent.innerHTML = `
+                <div class="flex items-center gap-2 ${isError ? 'text-red-600' : 'text-green-600'}">
+                    <i data-lucide="${isError ? 'alert-circle' : 'check-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            status.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function generateKey() {
+            $.post('/generate_key', function(response) {
+                showStatus(`
+                    <div class="space-y-2">
+                        <div class="font-semibold">Your key: <span class="text-blue-600">${response.key}</span></div>
+                        <div class="text-yellow-600 flex items-center gap-2">
+                            <i data-lucide="alert-triangle"></i>
+                            Note: Key requires admin approval before use
+                        </div>
+                        <div class="text-gray-600">Price: P50 for 3 days access</div>
+                    </div>
+                `);
+                lucide.createIcons();
+            });
+        }
+
+        function validateKey() {
+            const key = document.getElementById('key').value;
+            if (!key) {
+                showStatus('Please enter a key', true);
+                return;
+            }
+
+            $.post('/validate_key', { key: key }, function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('keySection').style.display = 'none';
+                    document.getElementById('shareSection').style.display = 'block';
+                    showStatus('Key validated successfully!');
+                } else {
+                    showStatus(response.message, true);
+                }
+            });
+        }
+
+        function startShare() {
+            const postId = document.getElementById('postId').value;
+            const shareCount = document.getElementById('shareCount').value;
+
+            if (!postId || !shareCount) {
+                showStatus('Please fill in all fields', true);
+                return;
+            }
+
+            if (shareCount < 1 || shareCount > 1000) {
+                showStatus('Share count must be between 1 and 1000', true);
+                return;
+            }
+
+            showStatus('Starting share process... Please wait...');
+            
+            $.post('/share', {
+                post_id: postId,
+                share_count: shareCount
+            }, function(response) {
+                showStatus(response.message, response.status === 'error');
+            });
+        }
+    </script>
+</body>
+</html>
