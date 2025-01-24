@@ -10,7 +10,6 @@ import aiohttp
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
-from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -169,27 +168,49 @@ async def share_post(token: str, post_id: str):
         'host': 'graph.facebook.com'
     }
     
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(
-                'https://graph.facebook.com/me/feed',
-                params={
-                    'link': f'https://facebook.com/{post_id}',
-                    'published': '0',
-                    'access_token': token
-                },
-                headers=headers,
-                timeout=30
-            ) as response:
-                data = await response.json()
-                if 'id' in data:
-                    ShareStats.update(success=True)
-                    return True, "Share successful"
-                ShareStats.update(success=False)
-                return False, data.get('error', {}).get('message', 'Unknown error')
-        except Exception as e:
-            ShareStats.update(success=False)
-            return False, str(e)
+    try:
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    'https://graph.facebook.com/me/feed',
+                    params={
+                        'link': f'https://facebook.com/{post_id}',
+                        'published': '0',
+                        'access_token': token
+                    },
+                    headers=headers,
+                    timeout=30
+                ) as response:
+                    data = await response.json()
+                    
+                    if 'id' in data:
+                        ShareStats.update(success=True)
+                        return True, "Share successful"
+                    
+                    # Handle specific error cases
+                    error = data.get('error', {})
+                    error_code = error.get('code')
+                    error_message = error.get('message', 'Unknown error')
+                    
+                    # Common Facebook API error codes
+                    if error_code in [190, 463, 467]:  # Invalid/Expired token errors
+                        raise Exception(f"Token invalid or expired: {error_message}")
+                    elif error_code == 4:  # Rate limit
+                        raise Exception(f"Rate limited: {error_message}")
+                    elif error_code == 506:  # Duplicate post
+                        raise Exception(f"Duplicate post: {error_message}")
+                    
+                    ShareStats.update(success=False)
+                    return False, error_message
+                    
+            except aiohttp.ClientError as e:
+                raise Exception(f"Network error: {str(e)}")
+            except asyncio.TimeoutError:
+                raise Exception("Request timed out")
+                
+    except Exception as e:
+        ShareStats.update(success=False)
+        return False, str(e)
 
 @app.route('/')
 def index():
@@ -316,6 +337,7 @@ def share():
         return jsonify({'status': 'error', 'message': 'Share count must be between 1 and 1000'})
     
     try:
+        # Read all tokens
         with open(TOKEN_FILE, 'r') as f:
             tokens = [line.strip() for line in f if line.strip()]
             
@@ -324,20 +346,59 @@ def share():
         
         success = 0
         errors = 0
+        valid_tokens = []
+        invalid_tokens = []
         
-        for token in tokens[:share_count]:
-            result, message = asyncio.run(share_post(token, post_id))
-            if result:
-                success += 1
-            else:
-                errors += 1
+        # Process all available tokens up to share_count
+        remaining_shares = share_count
         
+        async def process_tokens():
+            nonlocal success, errors, remaining_shares
+            
+            async with aiohttp.ClientSession() as session:
+                tasks = []
+                for token in tokens:
+                    if remaining_shares <= 0:
+                        break
+                    
+                    task = asyncio.create_task(share_post(token, post_id))
+                    tasks.append((token, task))
+                    remaining_shares -= 1
+                
+                for token, task in tasks:
+                    try:
+                        result, message = await task
+                        if result:
+                            success += 1
+                            valid_tokens.append(token)
+                        else:
+                            errors += 1
+                            if "expired" in message.lower() or "invalid" in message.lower():
+                                invalid_tokens.append(token)
+                            else:
+                                valid_tokens.append(token)  # Keep token if error is temporary
+                    except Exception as e:
+                        errors += 1
+                        logger.error(f"Error with token {token}: {str(e)}")
+                        if "expired" in str(e).lower() or "invalid" in str(e).lower():
+                            invalid_tokens.append(token)
+                        else:
+                            valid_tokens.append(token)
+        
+        # Run token processing
+        asyncio.run(process_tokens())
+        
+        # Update tokens file - remove invalid tokens
+        with open(TOKEN_FILE, 'w') as f:
+            f.write('\n'.join(valid_tokens))
+            
         # Update key stats
         key_manager.update_key_stats(session['key'], success)
         
+        removed_count = len(invalid_tokens)
         return jsonify({
             'status': 'success',
-            'message': f'Shares completed. Success: {success}, Failed: {errors}'
+            'message': f'Shares completed. Success: {success}, Failed: {errors}, Invalid tokens removed: {removed_count}'
         })
         
     except Exception as e:
@@ -355,4 +416,4 @@ def internal_error(error):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
