@@ -76,7 +76,7 @@
         }
 
         .dark {
-            --background: 240 10% 3.9%;
+            --background: 0 0% 0%;
             --foreground: 0 0% 98%;
             --card: 240 10% 3.9%;
             --card-foreground: 0 0% 98%;
@@ -97,10 +97,14 @@
             --ring: 240 4.9% 83.9%;
         }
 
-        @keyframes slideUp {
+        .logo-shadow {
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -108,19 +112,19 @@
             }
         }
 
-        .animate-slide-up {
-            animation: slideUp 0.3s ease-out forwards;
+        .animate-fadeInUp {
+            animation: fadeInUp 0.5s ease-out forwards;
         }
     </style>
 </head>
-<body class="bg-background text-foreground font-sans antialiased">
+<body class="bg-background text-foreground font-sans antialiased min-h-screen">
     <div class="min-h-screen flex flex-col">
         <!-- Header -->
-        <header class="border-b border-border sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
-            <div class="container mx-auto px-4 py-4">
+        <header class="border-b border-border/50 backdrop-blur-sm bg-background/95 sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-3">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <i data-lucide="shield" class="h-6 w-6"></i>
+                    <div class="flex items-center space-x-3">
+                        <img src="https://files.catbox.moe/cnsavb.png" alt="WinkSpam Logo" class="h-8 w-8 logo-shadow">
                         <span class="text-lg font-semibold">WinkSpam</span>
                         <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
                     </div>
@@ -132,15 +136,15 @@
         <main class="flex-1 flex items-center justify-center p-4">
             <div class="w-full max-w-[400px] space-y-6">
                 <!-- Login Card -->
-                <div class="rounded-lg border border-border bg-card p-8 shadow-lg animate-slide-up">
+                <div class="rounded-lg border border-border bg-card p-8 shadow-lg animate-fadeInUp">
                     <!-- Logo and Title -->
                     <div class="flex flex-col items-center space-y-4 mb-8">
-                        <div class="rounded-full bg-primary/10 p-4 ring-1 ring-border">
-                            <i data-lucide="shield-lock" class="h-12 w-12 text-primary"></i>
+                        <div class="rounded-full bg-primary/5 p-4 ring-1 ring-border">
+                            <img src="https://files.catbox.moe/cnsavb.png" alt="WinkSpam Logo" class="h-16 w-16 logo-shadow">
                         </div>
                         <div class="text-center space-y-1">
                             <h1 class="text-2xl font-bold tracking-tight">Admin Access</h1>
-                            <p class="text-sm text-muted-foreground">Enter credentials to access the panel</p>
+                            <p class="text-sm text-muted-foreground">Enter your credentials to access the panel</p>
                         </div>
                     </div>
 
@@ -148,7 +152,7 @@
                     {% with messages = get_flashed_messages() %}
                         {% if messages %}
                             {% for message in messages %}
-                                <div class="mb-6 flex items-center space-x-2 rounded-lg bg-destructive/10 p-4 text-sm text-destructive animate-slide-up">
+                                <div class="mb-6 flex items-center space-x-2 rounded-lg bg-destructive/10 p-4 text-sm text-destructive animate-fadeInUp">
                                     <i data-lucide="alert-circle" class="h-4 w-4 flex-shrink-0"></i>
                                     <span>{{ message }}</span>
                                 </div>
@@ -185,7 +189,7 @@
                 </div>
 
                 <!-- Back to Home Link -->
-                <div class="text-center animate-slide-up" style="animation-delay: 0.1s;">
+                <div class="text-center animate-fadeInUp">
                     <a href="/" class="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
                         <i data-lucide="arrow-left" class="h-4 w-4 mr-2"></i>
                         Back to Home
@@ -195,12 +199,15 @@
         </main>
 
         <!-- Footer -->
-        <footer class="border-t border-border">
+        <footer class="border-t border-border mt-auto">
             <div class="container mx-auto px-4 py-6">
                 <div class="flex justify-between items-center">
-                    <p class="text-sm text-muted-foreground">
-                        &copy; 2024 WinkSpam. All rights reserved.
-                    </p>
+                    <div class="flex items-center space-x-2">
+                        <img src="https://files.catbox.moe/cnsavb.png" alt="WinkSpam Logo" class="h-6 w-6">
+                        <p class="text-sm text-muted-foreground">
+                            &copy; {{ now().year }} WinkSpam. All rights reserved.
+                        </p>
+                    </div>
                     <div class="text-sm text-muted-foreground flex items-center space-x-2">
                         <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
                         <span>v1.0.0</span>
