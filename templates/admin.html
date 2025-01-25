@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinkSpam Admin Panel</title>
+    <title>WinkSpam - Share Tool</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
@@ -54,28 +55,6 @@
     </script>
     <style>
         :root {
-            --background: 0 0% 100%;
-            --foreground: 240 10% 3.9%;
-            --card: 0 0% 100%;
-            --card-foreground: 240 10% 3.9%;
-            --popover: 0 0% 100%;
-            --popover-foreground: 240 10% 3.9%;
-            --primary: 240 5.9% 10%;
-            --primary-foreground: 0 0% 98%;
-            --secondary: 240 4.8% 95.9%;
-            --secondary-foreground: 240 5.9% 10%;
-            --muted: 240 4.8% 95.9%;
-            --muted-foreground: 240 3.8% 46.1%;
-            --accent: 240 4.8% 95.9%;
-            --accent-foreground: 240 5.9% 10%;
-            --destructive: 0 84.2% 60.2%;
-            --destructive-foreground: 0 0% 98%;
-            --border: 240 5.9% 90%;
-            --input: 240 5.9% 90%;
-            --ring: 240 5.9% 10%;
-        }
-
-        .dark {
             --background: 0 0% 0%;
             --foreground: 0 0% 98%;
             --card: 240 10% 3.9%;
@@ -97,14 +76,40 @@
             --ring: 240 4.9% 83.9%;
         }
 
-        .logo-shadow {
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        .logo-container {
+            position: relative;
+            width: fit-content;
+            padding: 2px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
 
-        @keyframes fadeIn {
+        .logo-container:hover {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .logo-inner {
+            background: black;
+            border-radius: 50%;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-image {
+            border-radius: 50%;
+            width: 100%;
+            height: 100%;
+        }
+
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -112,287 +117,149 @@
             }
         }
 
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
-        }
-
-        .table-scrollbar {
-            scrollbar-width: thin;
-            scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--secondary));
-        }
-
-        .table-scrollbar::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        .table-scrollbar::-webkit-scrollbar-track {
-            background: hsl(var(--secondary));
-            border-radius: 4px;
-        }
-
-        .table-scrollbar::-webkit-scrollbar-thumb {
-            background: hsl(var(--muted-foreground));
-            border-radius: 4px;
+        .animate-fadeInUp {
+            animation: fadeInUp 0.5s ease-out forwards;
         }
     </style>
 </head>
-<body class="bg-background text-foreground font-sans antialiased min-h-screen">
-    <!-- Header -->
-    <header class="border-b border-border/50 backdrop-blur-sm bg-background/95 sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <img src="https://files.catbox.moe/cnsavb.png" alt="WinkSpam Logo" class="h-8 w-8 logo-shadow">
-                    <span class="text-lg font-semibold">WinkSpam Admin</span>
-                    <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/" class="flex items-center space-x-2 hover:text-muted-foreground transition-colors">
-                        <i data-lucide="home" class="h-5 w-5"></i>
-                        <span class="hidden sm:inline">Home</span>
+<body class="bg-background text-foreground font-sans antialiased">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="border-b border-border/50 backdrop-blur-sm bg-background/95 sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="logo-container">
+                            <div class="logo-inner">
+                                <img src="https://files.catbox.moe/cnsavb.png" alt="WinkSpam Logo" class="logo-image h-8 w-8">
+                            </div>
+                        </div>
+                        <span class="text-lg font-semibold">WinkSpam</span>
+                        <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
+                    </div>
+                    <a href="/admin" class="flex items-center space-x-2 hover:text-muted-foreground transition-colors">
+                        <i data-lucide="shield" class="h-5 w-5"></i>
+                        <span class="hidden sm:inline">Admin</span>
                     </a>
                 </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="mb-6 flex items-center space-x-2 rounded-lg border border-green-500/20 bg-green-500/10 p-4 text-green-500 animate-fade-in">
-                        <i data-lucide="check-circle" class="h-5 w-5"></i>
-                        <span>{{ message }}</span>
+        <!-- Main Content -->
+        <main class="flex-1 container mx-auto px-4 py-8">
+            <div class="max-w-2xl mx-auto space-y-6">
+                <!-- Tool Info -->
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i data-lucide="info" class="h-5 w-5"></i>
+                        <h2 class="text-xl font-semibold">Share Tool</h2>
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <!-- Welcome Banner -->
-        <div class="mb-8 rounded-lg border border-border/50 bg-card p-6 shadow-lg">
-            <div class="flex items-center justify-between">
-                <div class="space-y-1">
-                    <h1 class="text-2xl font-bold">Welcome to Admin Panel</h1>
-                    <p class="text-muted-foreground">Manage your tokens, keys, and monitor system performance</p>
-                </div>
-                <img src="https://files.catbox.moe/cnsavb.png" alt="WinkSpam Logo" class="h-12 w-12 logo-shadow hidden sm:block">
-            </div>
-        </div>
-
-        <!-- Overview Cards -->
-        <div class="grid gap-6 mb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            <!-- Total Shares Card -->
-            <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium">Total Shares</h3>
-                    <div class="p-2 rounded-full bg-blue-400/10">
-                        <i data-lucide="activity" class="h-5 w-5 text-blue-400"></i>
+                    <div class="space-y-4 text-muted-foreground">
+                        <div class="flex items-center space-x-3">
+                            <div class="h-8 w-8 rounded-full bg-blue-400/10 flex items-center justify-center">
+                                <i data-lucide="zap" class="h-4 w-4 text-blue-400"></i>
+                            </div>
+                            <span>Fast and Reliable Facebook Post Sharing</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="h-8 w-8 rounded-full bg-green-400/10 flex items-center justify-center">
+                                <i data-lucide="shield-check" class="h-4 w-4 text-green-400"></i>
+                            </div>
+                            <span>Secure Key Authentication System</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="h-8 w-8 rounded-full bg-yellow-400/10 flex items-center justify-center">
+                                <i data-lucide="activity" class="h-4 w-4 text-yellow-400"></i>
+                            </div>
+                            <span>Real-time Share Progress Tracking</span>
+                        </div>
                     </div>
                 </div>
-                <div class="space-y-1">
-                    <p class="text-3xl font-bold">{{ stats.total_shares }}</p>
-                    <p class="text-sm text-muted-foreground">Lifetime share count</p>
-                </div>
-            </div>
-            
-            <!-- Success Rate Card -->
-            <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium">Success Rate</h3>
-                    <div class="p-2 rounded-full bg-green-400/10">
-                        <i data-lucide="percent" class="h-5 w-5 text-green-400"></i>
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-3xl font-bold">
-                        {% if stats.total_shares > 0 %}
-                            {{ "%.1f"|format(stats.successful_shares / stats.total_shares * 100) }}%
-                        {% else %}
-                            0%
-                        {% endif %}
-                    </p>
-                    <p class="text-sm text-muted-foreground">Average success rate</p>
-                </div>
-            </div>
-            
-            <!-- Active Keys Card -->
-            <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium">Active Keys</h3>
-                    <div class="p-2 rounded-full bg-yellow-400/10">
-                        <i data-lucide="key" class="h-5 w-5 text-yellow-400"></i>
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-3xl font-bold">{{ active_keys }}</p>
-                    <p class="text-sm text-muted-foreground">Currently active</p>
-                </div>
-            </div>
-            
-            <!-- Pending Keys Card -->
-            <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium">Pending Keys</h3>
-                    <div class="p-2 rounded-full bg-orange-400/10">
-                        <i data-lucide="hourglass" class="h-5 w-5 text-orange-400"></i>
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-3xl font-bold">{{ pending_keys }}</p>
-                    <p class="text-sm text-muted-foreground">Awaiting approval</p>
-                </div>
-            </div>
-        </div>
 
-        <!-- Key Management Section -->
-        <div class="rounded-lg border border-border bg-card p-6 mb-8 shadow-lg">
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center space-x-3">
-                    <i data-lucide="key" class="h-6 w-6"></i>
-                    <h2 class="text-2xl font-semibold">Key Management</h2>
-                </div>
-                <div class="flex space-x-3">
-                    <span class="inline-flex items-center rounded-full bg-green-500/10 px-3 py-1 text-sm text-green-500">
-                        <i data-lucide="check" class="h-4 w-4 mr-1"></i>
-                        {{ active_keys }} Active
-                    </span>
-                    <span class="inline-flex items-center rounded-full bg-yellow-500/10 px-3 py-1 text-sm text-yellow-500">
-                        <i data-lucide="clock" class="h-4 w-4 mr-1"></i>
-                        {{ pending_keys }} Pending
-                    </span>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto table-scrollbar">
-                <table class="w-full min-w-[800px]">
-                    <thead>
-                        <tr class="border-b border-border">
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Key</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Created</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Expires</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Shares</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border">
-                        {% for key, data in keys.items() %}
-                        <tr class="hover:bg-muted/50 transition-colors">
-                            <td class="py-3 px-4">
-                                <div class="font-medium">{{ key }}</div>
-                                <div class="text-xs text-muted-foreground">Last used: {{ data.last_used or 'Never' }}</div>
-                            </td>
-                            <td class="py-3 px-4 text-sm text-muted-foreground">{{ data.created_at }}</td>
-                            <td class="py-3 px-4 text-sm text-muted-foreground">{{ data.expiry }}</td>
-                            <td class="py-3 px-4">
-                                {% if data.active %}
-                                <span class="inline-flex items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-500">
-                                    <i data-lucide="check" class="h-3 w-3 mr-1"></i>
-                                    Active
-                                </span>
-                                {% else %}
-                                <span class="inline-flex items-center rounded-full bg-yellow-500/10 px-2.5 py-0.5 text-xs font-medium text-yellow-500">
-                                    <i data-lucide="clock" class="h-3 w-3 mr-1"></i>
-                                    Pending
-                                </span>
-                                {% endif %}
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="text-sm font-medium">{{ data.shares_completed|default(0) }}</div>
-                                <div class="text-xs text-muted-foreground">Total shares</div>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="flex space-x-3">
-                                    {% if not data.active %}
-                                    <button onclick="confirmAction('{{ url_for('approve_key', key=key) }}', 'approve')" 
-                                            class="inline-flex items-center text-sm text-green-500 hover:text-green-400 transition-colors">
-                                        <i data-lucide="check" class="h-4 w-4 mr-1"></i>
-                                        Approve
-                                    </button>
-                                    {% else %}
-                                    <button onclick="confirmAction('{{ url_for('revoke_key', key=key) }}', 'revoke')"
-                                            class="inline-flex items-center text-sm text-yellow-500 hover:text-yellow-400 transition-colors">
-                                        <i data-lucide="ban" class="h-4 w-4 mr-1"></i>
-                                        Revoke
-                                    </button>
-                                    {% endif %}
-                                    <button onclick="confirmAction('{{ url_for('delete_key', key=key) }}', 'delete')"
-                                            class="inline-flex items-center text-sm text-destructive hover:text-destructive/80 transition-colors">
-                                        <i data-lucide="trash-2" class="h-4 w-4 mr-1"></i>
-                                        Delete
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Token Management Section -->
-        <div class="rounded-lg border border-border bg-card p-6 shadow-lg">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center space-x-3">
-                    <i data-lucide="key-square" class="h-6 w-6"></i>
-                    <h2 class="text-2xl font-semibold">Token Management</h2>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <div class="text-sm text-muted-foreground" id="tokenCount">
-                        <span class="font-medium">0</span>/1000 tokens
+                <!-- Authentication Section -->
+                <div id="keySection" class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i data-lucide="key" class="h-5 w-5"></i>
+                        <h2 class="text-xl font-semibold">Authentication</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <input type="text" id="key" placeholder="Enter your access key" 
+                                   class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors">
+                        </div>
+                        <button onclick="validateKey()" 
+                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
+                            <i data-lucide="unlock" class="h-4 w-4 mr-2"></i>
+                            Validate Key
+                        </button>
+                        <div class="text-center">
+                            <span class="text-sm text-muted-foreground">Don't have a key?</span>
+                            <button onclick="generateKey()" 
+                                    class="inline-flex items-center text-sm text-primary hover:underline ml-1">
+                                <i data-lucide="plus-circle" class="h-4 w-4 mr-1"></i>
+                                Generate new key
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Share Section -->
+                <div id="shareSection" class="hidden rounded-lg border border-border bg-card p-6 shadow-lg">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i data-lucide="share-2" class="h-5 w-5"></i>
+                        <h2 class="text-xl font-semibold">Share Configuration</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label for="postId" class="text-sm font-medium leading-none">
+                                Post ID
+                            </label>
+                            <input type="text" id="postId" placeholder="Enter Facebook Post ID" 
+                                   class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="shareCount" class="text-sm font-medium leading-none flex justify-between">
+                                <span>Number of Shares</span>
+                                <span class="text-muted-foreground" id="maxSharesLabel">Max: 1000</span>
+                            </label>
+                            <input type="number" id="shareCount" placeholder="1-1000" min="1" max="1000"
+                                   class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors">
+                        </div>
+                        <button onclick="startShare()" 
+                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
+                            <i data-lucide="play" class="h-4 w-4 mr-2"></i>
+                            Start Share Process
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status Section -->
+                <div id="status" class="hidden"></div>
             </div>
-            
-            <form action="{{ url_for('update_tokens') }}" method="POST" class="space-y-4" id="tokenForm">
-                <div class="flex items-center justify-between text-sm text-muted-foreground mb-2">
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-border mt-auto">
+            <div class="container mx-auto px-4 py-6">
+                <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
                     <div class="flex items-center space-x-2">
-                        <i data-lucide="info" class="h-4 w-4"></i>
-                        <span>Enter one token per line (Maximum 1000 tokens)</span>
+                        <div class="logo-container">
+                            <div class="logo-inner">
+                                <img src="https://files.catbox.moe/cnsavb.png" alt="WinkSpam Logo" class="logo-image h-6 w-6">
+                            </div>
+                        </div>
+                        <p class="text-sm text-muted-foreground">
+                            &copy; {{ now().year }} WinkSpam. All rights reserved.
+                        </p>
                     </div>
-                </div>
-                
-                <div class="relative">
-                    <textarea name="tokens" 
-                            rows="10" 
-                            class="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors resize-y"
-                            placeholder="Enter your tokens here..."
-                            onInput="updateTokenCount(this)">{{ tokens }}</textarea>
-                    
-                    <div class="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded-md">
-                        <span id="lineCount">0 lines</span>
+                    <div class="text-sm text-muted-foreground flex items-center space-x-2">
+                        <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
+                        <span>v1.0.0</span>
                     </div>
-                </div>
-                
-                <button type="submit" 
-                        class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-full h-10 transition-colors">
-                    <i data-lucide="save" class="h-4 w-4 mr-2"></i>
-                    Save Tokens
-                </button>
-            </form>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="border-t border-border mt-8">
-        <div class="container mx-auto px-4 py-6">
-            <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
-                <div class="flex items-center space-x-2">
-                    <img src="https://files.catbox.moe/cnsavb.png" alt="WinkSpam Logo" class="h-6 w-6">
-                    <p class="text-sm text-muted-foreground">
-                        &copy; {{ now().year }} WinkSpam. All rights reserved.
-                    </p>
-                </div>
-                <div class="text-sm text-muted-foreground flex items-center space-x-2">
-                    <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
-                    <span>v1.0.0</span>
                 </div>
             </div>
-        </div>
-    </footer>
+        </footer>
+    </div>
 
     <!-- Toast Container -->
     <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
@@ -429,62 +296,212 @@
             }, 3000);
         }
 
-        function updateTokenCount(textarea) {
-            const tokens = textarea.value.trim().split('\n').filter(t => t.trim());
-            const count = tokens.length;
-            
-            document.getElementById('tokenCount').innerHTML = `
-                <span class="font-medium ${count > 1000 ? 'text-destructive' : ''}">${count}</span>/1000 tokens
+        function showProgress(success, failed, total) {
+            const progress = ((success + failed) / total) * 100;
+            return `
+                <div class="space-y-4">
+                    <div class="w-full h-2.5 bg-secondary rounded-full overflow-hidden">
+                        <div class="bg-primary h-2.5 transition-all duration-500" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
+                            <span class="text-muted-foreground text-sm">Success</span>
+                            <span class="text-xl font-semibold text-green-500">${success}</span>
+                        </div>
+                        <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
+                            <span class="text-muted-foreground text-sm">Failed</span>
+                            <span class="text-xl font-semibold text-destructive">${failed}</span>
+                        </div>
+                        <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
+                            <span class="text-muted-foreground text-sm">Total</span>
+                            <span class="text-xl font-semibold">${total}</span>
+                        </div>
+                    </div>
+                </div>
             `;
-            document.getElementById('lineCount').textContent = `${count} line${count !== 1 ? 's' : ''}`;
         }
 
-        function confirmAction(url, action) {
-            const messages = {
-                approve: 'Are you sure you want to approve this key?',
-                revoke: 'Are you sure you want to revoke this key?\nUsers will no longer be able to use it.',
-                delete: 'Are you sure you want to delete this key?\nThis action cannot be undone.'
-            };
+        function showStatus(message, isError = false) {
+            const statusHtml = `
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" class="h-5 w-5 ${isError ? 'text-destructive' : 'text-primary'}"></i>
+                        <h2 class="text-xl font-semibold">Status Update</h2>
+                    </div>
+                    <div class="${isError ? 'text-destructive' : 'text-card-foreground'}">
+                        ${message}
+                    </div>
+                </div>
+            `;
             
-            if (confirm(messages[action])) {
-                window.location.href = url;
+            const status = document.getElementById('status');
+            status.innerHTML = statusHtml;
+            status.classList.remove('hidden');
+            lucide.createIcons();
+
+            if (window.innerWidth < 768) {
+                status.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
 
-        // Form submission handler
-        document.getElementById('tokenForm').addEventListener('submit', function(e) {
-            const textarea = this.querySelector('textarea');
-            const tokens = textarea.value.trim().split('\n').filter(t => t.trim());
-            
-            if (tokens.length === 0) {
-                e.preventDefault();
-                showToast('Please enter at least one token', 'error');
+        let shareInProgress = false;
+
+        function generateKey() {
+            $.post('/generate_key', function(response) {
+                showStatus(`
+                    <div class="space-y-4">
+                        <div class="p-4 rounded-md bg-secondary/50 border border-border">
+                            <p class="font-semibold mb-2">Your key:</p>
+                            <code class="text-primary break-all">${response.key}</code>
+                        </div>
+                        <div class="flex items-center space-x-2 text-yellow-500">
+                            <i data-lucide="alert-triangle" class="h-4 w-4 flex-shrink-0"></i>
+                            <span>Key requires admin approval before use</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-primary">
+                            <i data-lucide="credit-card" class="h-4 w-4 flex-shrink-0"></i>
+                            <span>Price: P50 for 3 days access</span>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        function validateKey() {
+            const key = document.getElementById('key').value;
+            if (!key) {
+                showStatus('Please enter a key', true);
                 return;
             }
 
-            if (tokens.length > 1000) {
-                e.preventDefault();
-                showToast('Maximum 1000 tokens allowed', 'error');
+            $.post('/validate_key', { key: key }, function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('keySection').style.display = 'none';
+                    document.getElementById('shareSection').style.display = 'block';
+                    showStatus(`
+                        <div class="flex items-center space-x-2 text-green-500">
+                            <i data-lucide="check-circle" class="h-5 w-5"></i>
+                            <span>Key validated successfully!</span>
+                        </div>
+                    `);
+
+                    $.get('/get_token_count', function(response) {
+                        if (response.status === 'success') {
+                            const maxShares = response.count;
+                            document.getElementById('shareCount').max = maxShares;
+                            document.getElementById('maxSharesLabel').textContent = `Max: ${maxShares}`;
+                        }
+                    });
+                } else {
+                    showStatus(`
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="x-circle" class="h-5 w-5"></i>
+                            <span>${response.message}</span>
+                        </div>
+                    `, true);
+                }
+            });
+        }
+
+        function startShare() {
+            if (shareInProgress) return;
+
+            const postId = document.getElementById('postId').value;
+            const shareCount = parseInt(document.getElementById('shareCount').value);
+            const maxShares = parseInt(document.getElementById('shareCount').max);
+
+            if (!postId || !shareCount) {
+                showStatus('Please fill in all fields', true);
                 return;
+            }
+
+            if (shareCount < 1 || shareCount > maxShares) {
+                showStatus(`Share count must be between 1 and ${maxShares}`, true);
+                return;
+            }
+
+            shareInProgress = true;
+            document.getElementById('shareSection').classList.add('opacity-50', 'pointer-events-none');
+
+            showStatus(`
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-2 text-primary">
+                        <i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i>
+                        <span>Share process started...</span>
+                    </div>
+                    ${showProgress(0, 0, shareCount)}
+                </div>
+            `);
+
+            $.post('/share', {
+                post_id: postId,
+                share_count: shareCount
+            })
+            .done(function(response) {
+                shareInProgress = false;
+                document.getElementById('shareSection').classList.remove('opacity-50', 'pointer-events-none');
+
+                const message = response.message;
+                const isError = response.status === 'error';
+
+                if (!isError) {
+                    const matches = message.match(/Success: (\d+), Failed: (\d+)/);
+                    const successCount = matches ? parseInt(matches[1]) : 0;
+                    const failedCount = matches ? parseInt(matches[2]) : 0;
+
+                    // Update max shares
+                    const newMaxShares = response.available_tokens || maxShares;
+                    document.getElementById('shareCount').max = newMaxShares;
+                    document.getElementById('maxSharesLabel').textContent = `Max: ${newMaxShares}`;
+
+                    showStatus(`
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-2 text-primary">
+                                <i data-lucide="check-circle" class="h-5 w-5"></i>
+                                <span>${message}</span>
+                            </div>
+                            ${showProgress(successCount, failedCount, shareCount)}
+                            <button onclick="resetForm()" 
+                                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2 w-full mt-4">
+                                <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                                Start New Share
+                            </button>
+                        </div>
+                    `);
+                } else {
+                    showStatus(message, true);
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                shareInProgress = false;
+                document.getElementById('shareSection').classList.remove('opacity-50', 'pointer-events-none');
+                showStatus('An error occurred while processing your request. Please try again.', true);
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('postId').value = '';
+            document.getElementById('shareCount').value = '';
+            document.getElementById('status').classList.add('hidden');
+        }
+
+        // Handle Enter key
+        document.getElementById('key').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                validateKey();
             }
         });
 
-        // Initialize token count
+        document.getElementById('shareCount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startShare();
+            }
+        });
+
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            const textarea = document.querySelector('textarea[name="tokens"]');
-            if (textarea) {
-                updateTokenCount(textarea);
-            }
+            lucide.createIcons();
         });
-
-        // Show flash messages as toasts
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    showToast('{{ message }}');
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
     </script>
 </body>
 </html>
