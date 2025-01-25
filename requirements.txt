@@ -1,7 +1,9 @@
-flask==2.3.3
-gunicorn==21.2.0
-gevent==23.9.1
-werkzeug==2.3.7
+Flask==2.3.3
+Werkzeug==2.3.7
 aiohttp==3.8.5
 pytz==2023.3
-asyncio==3.4.3
+gunicorn==21.2.0
+Jinja2==3.1.2
+itsdangerous==2.1.2
+click==8.1.7
+MarkupSafe==2.1.3
