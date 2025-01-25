@@ -7,6 +7,12 @@ from datetime import datetime, timedelta
 import pytz
 import asyncio
 import aiohttp
+import uuid
+import string
+import random
+import httpx
+from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
@@ -47,6 +53,106 @@ def initialize_files():
 
 initialize_files()
 
+# Token getter functions
+async def get_token_from_credentials(email, password):
+    device_id = str(uuid.uuid4())
+    adid = str(uuid.uuid4())
+    
+    data = {
+        'adid': adid,
+        'format': 'json',
+        'device_id': device_id,
+        'email': email,
+        'password': password,
+        'generate_session_cookies': '1',
+        'credentials_type': 'password',
+        'source': 'login',
+        'error_detail_type': 'button_with_disabled',
+        'meta_inf_fbmeta': '',
+        'advertiser_id': adid,
+        'currently_logged_in_userid': '0',
+        'locale': 'en_US',
+        'client_country_code': 'US',
+        'method': 'auth.login',
+        'fb_api_req_friendly_name': 'authenticate',
+        'fb_api_caller_class': 'com.facebook.account.login.protocol.Fb4aAuthHandler',
+        'access_token': '350685531728|62f8ce9f74b12f84c123cc23437a4a32',
+        'api_key': '882a8490361da98702bf97a021ddc14d'
+    }
+
+    headers = {
+        'User-Agent': '[FBAN/FB4A;FBAV/396.1.0.28.104;FBBV/429650999;FBDM/{density=2.25,width=720,height=1452};FBLC/en_US;FBRV/437165341;FBCR/Carrier;FBMF/OPPO;FBBD/OPPO;FBPN/com.facebook.katana;FBDV/CPH1893;FBSV/10;FBOP/1;FBCA/arm64-v8a:;]',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'close',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Host': 'b-api.facebook.com',
+        'X-FB-Net-HNI': str(random.randint(20000, 40000)),
+        'X-FB-SIM-HNI': str(random.randint(20000, 40000)),
+        'Authorization': 'OAuth 350685531728|62f8ce9f74b12f84c123cc23437a4a32',
+        'X-FB-Connection-Type': 'WIFI',
+        'X-Tigon-Is-Retry': 'False',
+        'x-fb-session-id': 'nid=jiZ+yNNBgbwC;pid=Main;tid=132;nc=1;fc=0;bc=0;cid=d29d67d37eca387482a8a5b740f84f62',
+        'x-fb-device-group': '5120',
+        'X-FB-Friendly-Name': 'authenticate',
+        'X-FB-Request-Analytics-Tags': 'graphservice',
+        'X-FB-HTTP-Engine': 'Liger',
+        'X-FB-Client-IP': 'True',
+        'X-FB-Server-Cluster': 'True',
+        'x-fb-connection-token': 'd29d67d37eca387482a8a5b740f84f62'
+    }
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                'https://b-api.facebook.com/method/auth.login',
+                data=data,
+                headers=headers,
+                timeout=30
+            )
+            result = response.json()
+
+            if 'access_token' in result:
+                return {
+                    'status': 'success',
+                    'access_token': result['access_token'],
+                    'cookies': result.get('session_cookies', [])
+                }
+            else:
+                return {
+                    'status': 'error',
+                    'message': result.get('error_msg', 'Login failed')
+                }
+    except Exception as e:
+        return {
+            'status': 'error',
+            'message': str(e)
+        }
+
+async def validate_and_process_tokens(accounts):
+    valid_tokens = []
+    
+    async def process_account(account):
+        try:
+            email, password = account.split('|')
+            result = await get_token_from_credentials(email.strip(), password.strip())
+            if result['status'] == 'success':
+                return result['access_token']
+        except Exception as e:
+            logger.error(f"Error processing account: {str(e)}")
+        return None
+
+    async with httpx.AsyncClient() as client:
+        tasks = []
+        for account in accounts:
+            if '|' in account:
+                tasks.append(process_account(account))
+        
+        results = await asyncio.gather(*tasks)
+        valid_tokens = [token for token in results if token]
+    
+    return valid_tokens
+
+# Stats management
 class ShareStats:
     @staticmethod
     def load():
@@ -68,6 +174,7 @@ class ShareStats:
         with open(SHARE_STATS_FILE, 'w') as f:
             json.dump(stats, f)
 
+# Key management
 class KeyManager:
     def __init__(self, keys_file=KEYS_FILE):
         self.keys_file = keys_file
@@ -151,6 +258,7 @@ class KeyManager:
     def get_all_keys(self):
         return self.keys
 
+# Authentication decorator
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -159,63 +267,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-async def share_post(token: str, post_id: str):
-    headers = {
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
-        'sec-ch-ua': '"Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': "Windows",
-        'sec-fetch-dest': 'document',
-        'sec-fetch-mode': 'navigate',
-        'sec-fetch-site': 'none',
-        'sec-fetch-user': '?1',
-        'upgrade-insecure-requests': '1',
-        'accept-encoding': 'gzip, deflate',
-        'host': 'graph.facebook.com'
-    }
-    
-    try:
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.post(
-                    'https://graph.facebook.com/me/feed',
-                    params={
-                        'link': f'https://facebook.com/{post_id}',
-                        'published': '0',
-                        'access_token': token
-                    },
-                    headers=headers,
-                    timeout=30
-                ) as response:
-                    data = await response.json()
-                    
-                    if 'id' in data:
-                        ShareStats.update(success=True)
-                        return True, "Share successful"
-                    
-                    error = data.get('error', {})
-                    error_code = error.get('code')
-                    error_message = error.get('message', 'Unknown error')
-                    
-                    if error_code in [190, 463, 467]:
-                        raise Exception(f"Token invalid or expired: {error_message}")
-                    elif error_code == 4:
-                        raise Exception(f"Rate limited: {error_message}")
-                    elif error_code == 506:
-                        raise Exception(f"Duplicate post: {error_message}")
-                    
-                    ShareStats.update(success=False)
-                    return False, error_message
-                    
-            except aiohttp.ClientError as e:
-                raise Exception(f"Network error: {str(e)}")
-            except asyncio.TimeoutError:
-                raise Exception("Request timed out")
-                
-    except Exception as e:
-        ShareStats.update(success=False)
-        return False, str(e)
-
+# API Routes
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -411,6 +463,60 @@ def share():
         logger.error(f"Share error: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)})
 
+@app.route('/donate_accounts', methods=['POST'])
+async def donate_accounts():
+    try:
+        accounts = request.form.get('accounts', '').split('\n')
+        accounts = [acc.strip() for acc in accounts if acc.strip()]
+        
+        if not accounts:
+            return jsonify({
+                'status': 'error',
+                'message': 'No accounts provided'
+            })
+
+        # Process accounts and get tokens
+        valid_tokens = await validate_and_process_tokens(accounts)
+        
+        if not valid_tokens:
+            return jsonify({
+                'status': 'error',
+                'message': 'No valid tokens generated from the accounts'
+            })
+
+        # Save valid tokens
+        try:
+            with open(TOKEN_FILE, 'r') as f:
+                existing_tokens = [line.strip() for line in f if line.strip()]
+            
+            # Add new tokens
+            all_tokens = existing_tokens + valid_tokens
+            
+            # Write back all tokens
+            with open(TOKEN_FILE, 'w') as f:
+                f.write('\n'.join(all_tokens))
+            
+            return jsonify({
+                'status': 'success',
+                'message': f'Successfully added {len(valid_tokens)} tokens',
+                'tokens_added': len(valid_tokens),
+                'total_tokens': len(all_tokens)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error saving tokens: {str(e)}")
+            return jsonify({
+                'status': 'error',
+                'message': 'Failed to save tokens'
+            })
+            
+    except Exception as e:
+        logger.error(f"Account processing error: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to process accounts'
+        })
+
 @app.route('/get_token_count', methods=['GET'])
 def get_token_count():
     try:
@@ -421,7 +527,6 @@ def get_token_count():
             'count': len(tokens)
         })
     except Exception as e:
-        logger.error(f"Token count error: {str(e)}")
         return jsonify({
             'status': 'error',
             'message': str(e)
@@ -436,14 +541,64 @@ def internal_error(error):
     logger.error(f"Internal server error: {str(error)}")
     return render_template('500.html'), 500
 
-# Create required directories
-def create_required_directories():
-    directories = ['logs', 'data']
-    for directory in directories:
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+# Share post function
+async def share_post(token: str, post_id: str):
+    headers = {
+        'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+        'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120"',
+        'sec-ch-ua-mobile': '?1',
+        'sec-ch-ua-platform': "Android",
+        'sec-fetch-dest': 'document',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-site': 'none',
+        'sec-fetch-user': '?1',
+        'upgrade-insecure-requests': '1',
+        'accept-encoding': 'gzip, deflate',
+        'host': 'graph.facebook.com'
+    }
+    
+    try:
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(
+                    'https://graph.facebook.com/me/feed',
+                    params={
+                        'link': f'https://facebook.com/{post_id}',
+                        'published': '0',
+                        'access_token': token
+                    },
+                    headers=headers,
+                    timeout=30
+                ) as response:
+                    data = await response.json()
+                    
+                    if 'id' in data:
+                        ShareStats.update(success=True)
+                        return True, "Share successful"
+                    
+                    error = data.get('error', {})
+                    error_code = error.get('code')
+                    error_message = error.get('message', 'Unknown error')
+                    
+                    if error_code in [190, 463, 467]:  # Invalid/Expired token errors
+                        raise Exception(f"Token invalid or expired: {error_message}")
+                    elif error_code == 4:  # Rate limit
+                        raise Exception(f"Rate limited: {error_message}")
+                    elif error_code == 506:  # Duplicate post
+                        raise Exception(f"Duplicate post: {error_message}")
+                    
+                    ShareStats.update(success=False)
+                    return False, error_message
+                    
+            except aiohttp.ClientError as e:
+                raise Exception(f"Network error: {str(e)}")
+            except asyncio.TimeoutError:
+                raise Exception("Request timed out")
+                
+    except Exception as e:
+        ShareStats.update(success=False)
+        return False, str(e)
 
 if __name__ == '__main__':
-    create_required_directories()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
