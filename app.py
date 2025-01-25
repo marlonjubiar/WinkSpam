@@ -19,6 +19,11 @@ app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 
+# Add template context processor for datetime
+@app.context_processor
+def inject_now():
+    return {'now': datetime.utcnow}
+
 # Constants
 KEYS_FILE = 'auth_keys.json'
 ADMIN_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"  # Default: "password"
@@ -188,17 +193,15 @@ async def share_post(token: str, post_id: str):
                         ShareStats.update(success=True)
                         return True, "Share successful"
                     
-                    # Handle specific error cases
                     error = data.get('error', {})
                     error_code = error.get('code')
                     error_message = error.get('message', 'Unknown error')
                     
-                    # Common Facebook API error codes
-                    if error_code in [190, 463, 467]:  # Invalid/Expired token errors
+                    if error_code in [190, 463, 467]:
                         raise Exception(f"Token invalid or expired: {error_message}")
-                    elif error_code == 4:  # Rate limit
+                    elif error_code == 4:
                         raise Exception(f"Rate limited: {error_message}")
-                    elif error_code == 506:  # Duplicate post
+                    elif error_code == 506:
                         raise Exception(f"Duplicate post: {error_message}")
                     
                     ShareStats.update(success=False)
@@ -240,20 +243,17 @@ def admin():
         key_manager = KeyManager()
         keys = key_manager.get_all_keys()
         
-        # Load tokens
         try:
             with open(TOKEN_FILE, 'r') as f:
                 tokens = f.read()
         except:
             tokens = ""
         
-        # Load stats
         stats = ShareStats.load()
         
         active_keys = sum(1 for k in keys.values() if k['active'])
         pending_keys = sum(1 for k in keys.values() if not k['active'])
         
-        # Count current tokens
         current_tokens = len([t for t in tokens.split('\n') if t.strip()])
         
         return render_template('admin.html', 
@@ -263,8 +263,7 @@ def admin():
             active_keys=active_keys,
             pending_keys=pending_keys,
             current_tokens=current_tokens,
-            max_tokens=MAX_TOKENS,
-            now=datetime.now
+            max_tokens=MAX_TOKENS
         )
     except Exception as e:
         logger.error(f"Admin page error: {str(e)}")
@@ -349,14 +348,12 @@ def share():
         return jsonify({'status': 'error', 'message': 'Share count must be between 1 and 1000'})
     
     try:
-        # Read all tokens
         with open(TOKEN_FILE, 'r') as f:
             tokens = [line.strip() for line in f if line.strip()]
             
         if not tokens:
             return jsonify({'status': 'error', 'message': 'No tokens available'})
         
-        # Limit share count to available tokens
         actual_share_count = min(share_count, len(tokens))
         
         success = 0
@@ -393,25 +390,22 @@ def share():
                         else:
                             valid_tokens.append(token)
         
-        # Run token processing
         asyncio.run(process_tokens())
         
-        # Update tokens file - keep valid tokens and add any remaining tokens
         all_tokens = valid_tokens + tokens[actual_share_count:]
         with open(TOKEN_FILE, 'w') as f:
             f.write('\n'.join(all_tokens))
-
-          # Update key stats
-            key_manager.update_key_stats(session['key'], success)
             
-            removed_count = len(invalid_tokens)
-            return jsonify({
-                'status': 'success',
-                'message': f'Shares completed with available tokens. Success: {success}, Failed: {errors}, Invalid tokens removed: {removed_count}, Available tokens: {len(all_tokens)}',
-                'available_tokens': len(all_tokens),
-                'success_count': success,
-                'updated_max_shares': len(all_tokens)  # This is used to update the UI max shares
-            })
+        key_manager.update_key_stats(session['key'], success)
+        
+        removed_count = len(invalid_tokens)
+        return jsonify({
+            'status': 'success',
+            'message': f'Shares completed with available tokens. Success: {success}, Failed: {errors}, Invalid tokens removed: {removed_count}, Available tokens: {len(all_tokens)}',
+            'available_tokens': len(all_tokens),
+            'success_count': success,
+            'updated_max_shares': len(all_tokens)
+        })
             
     except Exception as e:
         logger.error(f"Share error: {str(e)}")
@@ -427,6 +421,7 @@ def get_token_count():
             'count': len(tokens)
         })
     except Exception as e:
+        logger.error(f"Token count error: {str(e)}")
         return jsonify({
             'status': 'error',
             'message': str(e)
@@ -441,6 +436,14 @@ def internal_error(error):
     logger.error(f"Internal server error: {str(error)}")
     return render_template('500.html'), 500
 
+# Create required directories
+def create_required_directories():
+    directories = ['logs', 'data']
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
 if __name__ == '__main__':
+    create_required_directories()
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port)
