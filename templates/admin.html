@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WinkSpam Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
@@ -11,6 +14,9 @@
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
                     colors: {
                         border: "hsl(var(--border))",
                         input: "hsl(var(--input))",
@@ -90,9 +96,39 @@
             --input: 240 3.7% 15.9%;
             --ring: 240 4.9% 83.9%;
         }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        .table-scrollbar::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .table-scrollbar::-webkit-scrollbar-track {
+            background: hsl(var(--secondary));
+            border-radius: 5px;
+        }
+
+        .table-scrollbar::-webkit-scrollbar-thumb {
+            background: hsl(var(--muted-foreground));
+            border-radius: 5px;
+        }
     </style>
 </head>
-<body class="bg-background text-foreground min-h-screen">
+<body class="bg-background text-foreground font-sans antialiased min-h-screen">
     <!-- Header -->
     <header class="border-b border-border sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div class="container mx-auto px-4 py-4">
@@ -100,11 +136,12 @@
                 <div class="flex items-center space-x-2">
                     <i data-lucide="shield" class="h-6 w-6"></i>
                     <span class="text-lg font-semibold">WinkSpam Admin</span>
+                    <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="/" class="flex items-center space-x-2 hover:text-muted-foreground transition-colors">
                         <i data-lucide="home" class="h-5 w-5"></i>
-                        <span>Home</span>
+                        <span class="hidden sm:inline">Home</span>
                     </a>
                 </div>
             </div>
@@ -113,11 +150,12 @@
 
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8">
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                    <div class="mb-6 flex items-center space-x-2 rounded-lg border border-border bg-card p-4 animate-fade-in">
-                        <i data-lucide="check-circle" class="h-5 w-5 text-green-500"></i>
+                    <div class="mb-6 flex items-center space-x-2 rounded-lg border border-green-500/20 bg-green-500/10 p-4 text-green-500 animate-slide-in">
+                        <i data-lucide="check-circle" class="h-5 w-5"></i>
                         <span>{{ message }}</span>
                     </div>
                 {% endfor %}
@@ -125,19 +163,24 @@
         {% endwith %}
 
         <!-- Overview Cards -->
-        <div class="grid gap-6 mb-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-lg border border-border bg-card p-6">
+        <div class="grid gap-6 mb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-lg border border-border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium">Total Shares</h3>
-                    <i data-lucide="activity" class="h-5 w-5 text-blue-500"></i>
+                    <div class="p-2 rounded-full bg-blue-400/10 text-blue-400">
+                        <i data-lucide="activity" class="h-5 w-5"></i>
+                    </div>
                 </div>
                 <p class="text-3xl font-bold">{{ stats.total_shares }}</p>
+                <p class="text-sm text-muted-foreground mt-2">Lifetime share count</p>
             </div>
             
-            <div class="rounded-lg border border-border bg-card p-6">
+            <div class="rounded-lg border border-border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium">Success Rate</h3>
-                    <i data-lucide="percent" class="h-5 w-5 text-green-500"></i>
+                    <div class="p-2 rounded-full bg-green-400/10 text-green-400">
+                        <i data-lucide="percent" class="h-5 w-5"></i>
+                    </div>
                 </div>
                 <p class="text-3xl font-bold">
                     {% if stats.total_shares > 0 %}
@@ -146,46 +189,53 @@
                         0%
                     {% endif %}
                 </p>
+                <p class="text-sm text-muted-foreground mt-2">Overall success rate</p>
             </div>
             
-            <div class="rounded-lg border border-border bg-card p-6">
+            <div class="rounded-lg border border-border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium">Active Keys</h3>
-                    <i data-lucide="key" class="h-5 w-5 text-yellow-500"></i>
+                    <div class="p-2 rounded-full bg-yellow-400/10 text-yellow-400">
+                        <i data-lucide="key" class="h-5 w-5"></i>
+                    </div>
                 </div>
                 <p class="text-3xl font-bold">{{ active_keys }}</p>
+                <p class="text-sm text-muted-foreground mt-2">Currently active keys</p>
             </div>
             
-            <div class="rounded-lg border border-border bg-card p-6">
+            <div class="rounded-lg border border-border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-medium">Pending Keys</h3>
-                    <i data-lucide="hourglass" class="h-5 w-5 text-orange-500"></i>
+                    <div class="p-2 rounded-full bg-orange-400/10 text-orange-400">
+                        <i data-lucide="hourglass" class="h-5 w-5"></i>
+                    </div>
                 </div>
                 <p class="text-3xl font-bold">{{ pending_keys }}</p>
+                <p class="text-sm text-muted-foreground mt-2">Awaiting approval</p>
             </div>
         </div>
 
         <!-- Key Management Section -->
-        <div class="rounded-lg border border-border bg-card p-6 mb-8">
+        <div class="rounded-lg border border-border bg-card p-6 mb-8 shadow-sm">
             <div class="flex justify-between items-center mb-6">
                 <div class="flex items-center space-x-3">
                     <i data-lucide="key" class="h-6 w-6"></i>
                     <h2 class="text-2xl font-semibold">Key Management</h2>
                 </div>
                 <div class="flex space-x-3">
-                    <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
+                    <span class="inline-flex items-center rounded-full bg-green-500/10 px-3 py-1 text-sm text-green-500">
                         <i data-lucide="check" class="h-4 w-4 mr-1"></i>
                         {{ active_keys }} Active
                     </span>
-                    <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-sm text-yellow-700">
+                    <span class="inline-flex items-center rounded-full bg-yellow-500/10 px-3 py-1 text-sm text-yellow-500">
                         <i data-lucide="clock" class="h-4 w-4 mr-1"></i>
                         {{ pending_keys }} Pending
                     </span>
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full">
+            <div class="overflow-x-auto table-scrollbar">
+                <table class="w-full min-w-[800px]">
                     <thead>
                         <tr class="border-b border-border">
                             <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Key</th>
@@ -199,45 +249,49 @@
                     <tbody class="divide-y divide-border">
                         {% for key, data in keys.items() %}
                         <tr class="hover:bg-muted/50 transition-colors">
-                            <td class="py-3 px-4 text-sm font-medium">{{ key }}</td>
+                            <td class="py-3 px-4">
+                                <div class="font-medium">{{ key }}</div>
+                                <div class="text-xs text-muted-foreground">Last used: {{ data.last_used or 'Never' }}</div>
+                            </td>
                             <td class="py-3 px-4 text-sm text-muted-foreground">{{ data.created_at }}</td>
                             <td class="py-3 px-4 text-sm text-muted-foreground">{{ data.expiry }}</td>
                             <td class="py-3 px-4">
                                 {% if data.active %}
-                                <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                                <span class="inline-flex items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-500">
                                     <i data-lucide="check" class="h-3 w-3 mr-1"></i>
                                     Active
                                 </span>
                                 {% else %}
-                                <span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-700">
+                                <span class="inline-flex items-center rounded-full bg-yellow-500/10 px-2.5 py-0.5 text-xs font-medium text-yellow-500">
                                     <i data-lucide="clock" class="h-3 w-3 mr-1"></i>
                                     Pending
                                 </span>
                                 {% endif %}
                             </td>
-                            <td class="py-3 px-4 text-sm text-muted-foreground">
-                                {{ data.shares_completed|default(0) }}
+                            <td class="py-3 px-4">
+                                <div class="text-sm font-medium">{{ data.shares_completed|default(0) }}</div>
+                                <div class="text-xs text-muted-foreground">Total shares</div>
                             </td>
                             <td class="py-3 px-4">
                                 <div class="flex space-x-3">
                                     {% if not data.active %}
-                                    <a href="{{ url_for('approve_key', key=key) }}" 
-                                       class="inline-flex items-center text-sm text-green-600 hover:text-green-700 transition-colors">
+                                    <button onclick="confirmAction('{{ url_for('approve_key', key=key) }}', 'approve')" 
+                                            class="inline-flex items-center text-sm text-green-500 hover:text-green-600 transition-colors">
                                         <i data-lucide="check" class="h-4 w-4 mr-1"></i>
                                         Approve
-                                    </a>
+                                    </button>
                                     {% else %}
-                                    <a href="{{ url_for('revoke_key', key=key) }}" 
-                                       class="inline-flex items-center text-sm text-yellow-600 hover:text-yellow-700 transition-colors">
+                                    <button onclick="confirmAction('{{ url_for('revoke_key', key=key) }}', 'revoke')"
+                                            class="inline-flex items-center text-sm text-yellow-500 hover:text-yellow-600 transition-colors">
                                         <i data-lucide="ban" class="h-4 w-4 mr-1"></i>
                                         Revoke
-                                    </a>
+                                    </button>
                                     {% endif %}
-                                    <a href="{{ url_for('delete_key', key=key) }}" 
-                                       class="inline-flex items-center text-sm text-red-600 hover:text-red-700 transition-colors">
+                                    <button onclick="confirmAction('{{ url_for('delete_key', key=key) }}', 'delete')"
+                                            class="inline-flex items-center text-sm text-destructive hover:text-destructive/80 transition-colors">
                                         <i data-lucide="trash-2" class="h-4 w-4 mr-1"></i>
                                         Delete
-                                    </a>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -248,7 +302,7 @@
         </div>
 
         <!-- Token Management Section -->
-        <div class="rounded-lg border border-border bg-card p-6">
+        <div class="rounded-lg border border-border bg-card p-6 shadow-sm">
             <div class="flex items-center space-x-3 mb-6">
                 <i data-lucide="key-square" class="h-6 w-6"></i>
                 <h2 class="text-2xl font-semibold">Token Management</h2>
@@ -262,11 +316,11 @@
                 
                 <textarea name="tokens" 
                           rows="10" 
-                          class="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          class="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors resize-y"
                           placeholder="Enter your tokens here...">{{ tokens }}</textarea>
                 
                 <button type="submit" 
-                        class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-full h-10">
+                        class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-full h-10 transition-colors">
                     <i data-lucide="save" class="h-4 w-4 mr-2"></i>
                     Save Tokens
                 </button>
@@ -277,18 +331,19 @@
     <!-- Footer -->
     <footer class="border-t border-border mt-8">
         <div class="container mx-auto px-4 py-6">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
                 <p class="text-sm text-muted-foreground">
                     &copy; {{ now().year }} WinkSpam. All rights reserved.
                 </p>
-                <div class="text-sm text-muted-foreground">
-                    Version 1.0.0
+                <div class="text-sm text-muted-foreground flex items-center space-x-2">
+                    <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
+                    <span>v1.0.0</span>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Toast Container for Notifications -->
+    <!-- Toast Container -->
     <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
     <script>
@@ -300,7 +355,7 @@
             const toast = document.createElement('div');
             toast.className = `
                 flex items-center space-x-2 rounded-lg border border-border bg-card p-4 shadow-lg
-                ${type === 'success' ? 'text-green-500' : 'text-red-500'}
+                ${type === 'success' ? 'text-green-500' : 'text-destructive'}
                 transform transition-all duration-300 opacity-0 translate-y-2
             `;
             toast.innerHTML = `
@@ -313,9 +368,9 @@
             lucide.createIcons();
 
             // Animate in
-            setTimeout(() => {
+            requestAnimationFrame(() => {
                 toast.classList.remove('opacity-0', 'translate-y-2');
-            }, 10);
+            });
 
             // Remove after 3 seconds
             setTimeout(() => {
@@ -326,35 +381,55 @@
             }, 3000);
         }
 
-        // Confirm delete action
-        document.querySelectorAll('a[href*="delete_key"]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const confirmDelete = confirm('Are you sure you want to delete this key? This action cannot be undone.');
-                if (confirmDelete) {
-                    window.location.href = this.href;
-                }
-            });
-        });
+        // Confirm action with improved UX
+        function confirmAction(url, action) {
+            let message = '';
+            switch(action) {
+                case 'approve':
+                    message = 'Are you sure you want to approve this key?';
+                    break;
+                case 'revoke':
+                    message = 'Are you sure you want to revoke this key? Users will no longer be able to use it.';
+                    break;
+                case 'delete':
+                    message = 'Are you sure you want to delete this key? This action cannot be undone.';
+                    break;
+            }
+            
+            if (confirm(message)) {
+                window.location.href = url;
+            }
+        }
 
-        // Confirm revoke action
-        document.querySelectorAll('a[href*="revoke_key"]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const confirmRevoke = confirm('Are you sure you want to revoke this key?');
-                if (confirmRevoke) {
-                    window.location.href = this.href;
-                }
-            });
-        });
-
-        // Form submission handler
+        // Form submission handler with validation
         document.querySelector('form').addEventListener('submit', function(e) {
             const textarea = this.querySelector('textarea');
-            if (!textarea.value.trim()) {
+            const tokens = textarea.value.trim().split('\n').filter(token => token.trim());
+            
+            if (tokens.length === 0) {
                 e.preventDefault();
                 showToast('Please enter at least one token', 'error');
+                return;
             }
+
+            // Add loading state to button
+            const button = this.querySelector('button[type="submit"]');
+            const originalContent = button.innerHTML;
+            button.innerHTML = `
+                <i data-lucide="loader-2" class="h-4 w-4 mr-2 animate-spin"></i>
+                Saving...
+            `;
+            button.disabled = true;
+            lucide.createIcons();
+
+            // Re-enable after short delay if form wasn't submitted
+            setTimeout(() => {
+                if (button.disabled) {
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                    lucide.createIcons();
+                }
+            }, 3000);
         });
 
         // Show success messages as toasts
@@ -365,6 +440,23 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
+        // Responsive table handling
+        function checkTableScroll() {
+            const tables = document.querySelectorAll('.table-scrollbar');
+            tables.forEach(table => {
+                const parent = table.parentElement;
+                if (table.scrollWidth > parent.clientWidth) {
+                    parent.classList.add('overflow-x-auto');
+                } else {
+                    parent.classList.remove('overflow-x-auto');
+                }
+            });
+        }
+
+        // Check on load and resize
+        window.addEventListener('load', checkTableScroll);
+        window.addEventListener('resize', checkTableScroll);
     </script>
 </body>
 </html>
