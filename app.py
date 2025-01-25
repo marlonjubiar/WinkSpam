@@ -24,6 +24,7 @@ KEYS_FILE = 'auth_keys.json'
 ADMIN_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"  # Default: "password"
 TOKEN_FILE = 'tokens.txt'
 SHARE_STATS_FILE = 'share_stats.json'
+MAX_TOKENS = 1000
 
 # Initialize storage
 def initialize_files():
@@ -252,12 +253,17 @@ def admin():
         active_keys = sum(1 for k in keys.values() if k['active'])
         pending_keys = sum(1 for k in keys.values() if not k['active'])
         
+        # Count current tokens
+        current_tokens = len([t for t in tokens.split('\n') if t.strip()])
+        
         return render_template('admin.html', 
             keys=keys, 
             tokens=tokens, 
             stats=stats,
             active_keys=active_keys,
             pending_keys=pending_keys,
+            current_tokens=current_tokens,
+            max_tokens=MAX_TOKENS,
             now=datetime.now
         )
     except Exception as e:
@@ -309,10 +315,16 @@ def delete_key(key):
 @admin_required
 def update_tokens():
     tokens = request.form.get('tokens', '')
+    token_list = [t.strip() for t in tokens.split('\n') if t.strip()]
+    
+    if len(token_list) > MAX_TOKENS:
+        flash(f'Maximum {MAX_TOKENS} tokens allowed')
+        return redirect(url_for('admin'))
+    
     try:
         with open(TOKEN_FILE, 'w') as f:
-            f.write(tokens)
-        flash('Tokens updated successfully')
+            f.write('\n'.join(token_list))
+        flash(f'Successfully updated {len(token_list)} tokens')
     except Exception as e:
         flash(f'Failed to update tokens: {str(e)}')
     return redirect(url_for('admin'))
@@ -344,26 +356,22 @@ def share():
         if not tokens:
             return jsonify({'status': 'error', 'message': 'No tokens available'})
         
+        # Limit share count to available tokens
+        actual_share_count = min(share_count, len(tokens))
+        
         success = 0
         errors = 0
         valid_tokens = []
         invalid_tokens = []
         
-        # Process all available tokens up to share_count
-        remaining_shares = share_count
-        
         async def process_tokens():
-            nonlocal success, errors, remaining_shares
+            nonlocal success, errors
             
             async with aiohttp.ClientSession() as session:
                 tasks = []
-                for token in tokens:
-                    if remaining_shares <= 0:
-                        break
-                    
+                for token in tokens[:actual_share_count]:
                     task = asyncio.create_task(share_post(token, post_id))
                     tasks.append((token, task))
-                    remaining_shares -= 1
                 
                 for token, task in tasks:
                     try:
@@ -376,7 +384,7 @@ def share():
                             if "expired" in message.lower() or "invalid" in message.lower():
                                 invalid_tokens.append(token)
                             else:
-                                valid_tokens.append(token)  # Keep token if error is temporary
+                                valid_tokens.append(token)
                     except Exception as e:
                         errors += 1
                         logger.error(f"Error with token {token}: {str(e)}")
@@ -388,22 +396,41 @@ def share():
         # Run token processing
         asyncio.run(process_tokens())
         
-        # Update tokens file - remove invalid tokens
+        # Update tokens file - keep valid tokens and add any remaining tokens
+        all_tokens = valid_tokens + tokens[actual_share_count:]
         with open(TOKEN_FILE, 'w') as f:
-            f.write('\n'.join(valid_tokens))
+            f.write('\n'.join(all_tokens))
+
+          # Update key stats
+            key_manager.update_key_stats(session['key'], success)
             
-        # Update key stats
-        key_manager.update_key_stats(session['key'], success)
-        
-        removed_count = len(invalid_tokens)
-        return jsonify({
-            'status': 'success',
-            'message': f'Shares completed. Success: {success}, Failed: {errors}, Invalid tokens removed: {removed_count}'
-        })
-        
+            removed_count = len(invalid_tokens)
+            return jsonify({
+                'status': 'success',
+                'message': f'Shares completed with available tokens. Success: {success}, Failed: {errors}, Invalid tokens removed: {removed_count}, Available tokens: {len(all_tokens)}',
+                'available_tokens': len(all_tokens),
+                'success_count': success,
+                'updated_max_shares': len(all_tokens)  # This is used to update the UI max shares
+            })
+            
     except Exception as e:
         logger.error(f"Share error: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)})
+
+@app.route('/get_token_count', methods=['GET'])
+def get_token_count():
+    try:
+        with open(TOKEN_FILE, 'r') as f:
+            tokens = [line.strip() for line in f if line.strip()]
+        return jsonify({
+            'status': 'success',
+            'count': len(tokens)
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        })
 
 @app.errorhandler(404)
 def not_found_error(error):
