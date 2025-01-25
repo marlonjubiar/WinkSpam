@@ -78,32 +78,80 @@
 
         .logo-container {
             position: relative;
-            width: fit-content;
+            border-radius: 50%;
             padding: 2px;
+            background: linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.1),
+                rgba(255, 255, 255, 0.2)
+            );
+        }
+
+        .logo-container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
             border-radius: 50%;
-            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+            padding: 2px;
+            background: linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.1),
+                rgba(255, 255, 255, 0.05)
+            );
+            mask: linear-gradient(#000, #000) content-box,
+                  linear-gradient(#000, #000);
+            mask-composite: exclude;
         }
 
-        .logo-container:hover {
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
-
-        .logo-inner {
+        .logo-shine {
+            position: relative;
+            border-radius: 50%;
+            overflow: hidden;
             background: black;
-            border-radius: 50%;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        .logo-image {
+        .logo-shine::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            animation: shine 2s infinite;
+        }
+
+        .logo {
             border-radius: 50%;
-            width: 100%;
-            height: 100%;
+            transition: transform 0.2s ease;
+            filter: brightness(1.1);
+        }
+
+        .logo-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateY(-100%) translateX(-100%) rotate(25deg);
+            }
+            100% {
+                transform: translateY(100%) translateX(100%) rotate(25deg);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
         }
 
         @keyframes fadeInUp {
@@ -120,65 +168,116 @@
         .animate-fadeInUp {
             animation: fadeInUp 0.5s ease-out forwards;
         }
+
+        .animate-delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .animate-delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .title-gradient {
+            background: linear-gradient(to right, #fff, #ccc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
     </style>
 </head>
 <body class="bg-background text-foreground font-sans antialiased">
     <div class="min-h-screen flex flex-col">
         <!-- Header -->
-        <header class="border-b border-border/50 backdrop-blur-sm bg-background/95 sticky top-0 z-50">
-            <div class="container mx-auto px-4 py-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
+        <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div class="container flex h-14 max-w-screen-2xl items-center">
+                <div class="mr-4 flex">
+                    <a href="/" class="flex items-center space-x-2">
                         <div class="logo-container">
-                            <div class="logo-inner">
-                                <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="logo-image h-8 w-8">
+                            <div class="logo-shine">
+                                <img src="https://i.imgur.com/wyAJhIm.jpeg" 
+                                     alt="WinkSpam Logo" 
+                                     class="logo h-9 w-9"
+                                     width="36"
+                                     height="36">
                             </div>
                         </div>
-                        <span class="text-lg font-semibold">WinkSpam</span>
-                        <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
-                    </div>
-                    <a href="/admin" class="flex items-center space-x-2 hover:text-muted-foreground transition-colors">
-                        <i data-lucide="shield" class="h-5 w-5"></i>
-                        <span class="hidden sm:inline">Admin</span>
+                        <div class="flex items-center">
+                            <span class="hidden font-bold sm:inline-block">WinkSpam</span>
+                            <span class="ml-2 inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
+                        </div>
                     </a>
+                </div>
+                <div class="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+                    <nav class="flex items-center">
+                        <a href="/admin" 
+                           class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+                            <i data-lucide="shield" class="h-4 w-4 mr-2"></i>
+                            <span class="hidden sm:inline-block">Admin</span>
+                        </a>
+                    </nav>
                 </div>
             </div>
         </header>
 
         <!-- Main Content -->
         <main class="flex-1 container mx-auto px-4 py-8">
-            <div class="max-w-2xl mx-auto space-y-6">
-                <!-- Tool Info -->
-                <div class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
-                    <div class="flex items-center space-x-3 mb-4">
-                        <i data-lucide="info" class="h-5 w-5"></i>
-                        <h2 class="text-xl font-semibold">Share Tool</h2>
+            <!-- Title Section -->
+            <div class="w-full bg-black/50 backdrop-blur-sm border-b border-white/10 mb-8 rounded-lg">
+                <div class="container mx-auto px-4 py-6 text-center">
+                    <div class="flex flex-col items-center justify-center space-y-4">
+                        <div class="logo-container logo-float" style="width: 120px; height: 120px;">
+                            <div class="logo-shine">
+                                <img src="https://i.imgur.com/wyAJhIm.jpeg" 
+                                     alt="WinkSpam Logo" 
+                                     class="logo w-30 h-30 rounded-full"
+                                     width="120"
+                                     height="120">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <h1 class="text-4xl font-bold title-gradient">
+                                WinkSpam
+                            </h1>
+                            <p class="text-gray-400">Advanced Facebook Share Manager</p>
+                        </div>
                     </div>
-                    <div class="space-y-4 text-muted-foreground">
-                        <div class="flex items-center space-x-3">
-                            <div class="h-8 w-8 rounded-full bg-blue-400/10 flex items-center justify-center">
-                                <i data-lucide="zap" class="h-4 w-4 text-blue-400"></i>
-                            </div>
-                            <span>Fast and Reliable Facebook Post Sharing</span>
+                </div>
+            </div>
+
+            <div class="max-w-2xl mx-auto space-y-6">
+                <!-- Info Card -->
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
+                    <div class="relative overflow-hidden">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <i data-lucide="info" class="h-5 w-5"></i>
+                            <h2 class="text-xl font-semibold">Features</h2>
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="h-8 w-8 rounded-full bg-green-400/10 flex items-center justify-center">
-                                <i data-lucide="shield-check" class="h-4 w-4 text-green-400"></i>
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="h-8 w-8 rounded-full bg-blue-400/10 flex items-center justify-center">
+                                    <i data-lucide="zap" class="h-4 w-4 text-blue-400"></i>
+                                </div>
+                                <span>Fast and Reliable Facebook Post Sharing</span>
                             </div>
-                            <span>Secure Key Authentication System</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="h-8 w-8 rounded-full bg-yellow-400/10 flex items-center justify-center">
-                                <i data-lucide="activity" class="h-4 w-4 text-yellow-400"></i>
+                            <div class="flex items-center space-x-3">
+                                <div class="h-8 w-8 rounded-full bg-green-400/10 flex items-center justify-center">
+                                    <i data-lucide="shield-check" class="h-4 w-4 text-green-400"></i>
+                                </div>
+                                <span>Secure Key Authentication System</span>
                             </div>
-                            <span>Real-time Share Progress Tracking</span>
+                            <div class="flex items-center space-x-3">
+                                <div class="h-8 w-8 rounded-full bg-yellow-400/10 flex items-center justify-center">
+                                    <i data-lucide="activity" class="h-4 w-4 text-yellow-400"></i>
+                                </div>
+                                <span>Real-time Share Progress Tracking</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Authentication Section -->
-                <div id="keySection" class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
-                    <div class="flex items-center space-x-3 mb-4">
+                <div id="keySection" class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp animate-delay-1">
+                    <div class="flex items-center space-x-3 mb-6">
                         <i data-lucide="key" class="h-5 w-5"></i>
                         <h2 class="text-xl font-semibold">Authentication</h2>
                     </div>
@@ -188,14 +287,14 @@
                                    class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors">
                         </div>
                         <button onclick="validateKey()" 
-                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
+                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
                             <i data-lucide="unlock" class="h-4 w-4 mr-2"></i>
                             Validate Key
                         </button>
                         <div class="text-center">
                             <span class="text-sm text-muted-foreground">Don't have a key?</span>
                             <button onclick="generateKey()" 
-                                    class="inline-flex items-center text-sm text-primary hover:underline ml-1">
+                                    class="inline-flex items-center text-sm text-primary hover:text-primary/80 ml-1 transition-colors">
                                 <i data-lucide="plus-circle" class="h-4 w-4 mr-1"></i>
                                 Generate new key
                             </button>
@@ -204,32 +303,63 @@
                 </div>
 
                 <!-- Share Section -->
-                <div id="shareSection" class="hidden rounded-lg border border-border bg-card p-6 shadow-lg">
-                    <div class="flex items-center space-x-3 mb-4">
+                <div id="shareSection" class="hidden rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
+                    <div class="flex items-center space-x-3 mb-6">
                         <i data-lucide="share-2" class="h-5 w-5"></i>
                         <h2 class="text-xl font-semibold">Share Configuration</h2>
                     </div>
                     <div class="space-y-4">
                         <div class="space-y-2">
-                            <label for="postId" class="text-sm font-medium leading-none">
+                            <label for="postId" class="text-sm font-medium">
                                 Post ID
                             </label>
                             <input type="text" id="postId" placeholder="Enter Facebook Post ID" 
                                    class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors">
                         </div>
                         <div class="space-y-2">
-                            <label for="shareCount" class="text-sm font-medium leading-none flex justify-between">
-                                <span>Number of Shares</span>
-                                <span class="text-muted-foreground" id="maxSharesLabel">Max: 1000</span>
-                            </label>
+                            <div class="flex justify-between items-center">
+                                <label for="shareCount" class="text-sm font-medium">
+                                    Number of Shares
+                                </label>
+                                    <span class="text-xs text-muted-foreground" id="maxSharesLabel">Available: 0</span>
+                            </div>
                             <input type="number" id="shareCount" placeholder="1-1000" min="1" max="1000"
                                    class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors">
+                            <p class="text-xs text-muted-foreground mt-1">Share count will adjust to available tokens</p>
                         </div>
                         <button onclick="startShare()" 
-                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
+                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
                             <i data-lucide="play" class="h-4 w-4 mr-2"></i>
                             Start Share Process
                         </button>
+                    </div>
+                </div>
+
+                <!-- Account Donation Section -->
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp animate-delay-2">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <i data-lucide="heart" class="h-5 w-5 text-red-500"></i>
+                        <h2 class="text-xl font-semibold">Donate Accounts</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="text-sm text-muted-foreground">Support the community by donating Facebook accounts.</p>
+                        <div class="grid grid-cols-3 gap-4">
+                            <button onclick="donateAccounts(5)" 
+                                    class="flex flex-col items-center justify-center p-4 rounded-lg border border-border hover:bg-accent transition-colors">
+                                <span class="text-2xl font-bold">5</span>
+                                <span class="text-sm text-muted-foreground">Accounts</span>
+                            </button>
+                            <button onclick="donateAccounts(10)" 
+                                    class="flex flex-col items-center justify-center p-4 rounded-lg border border-border hover:bg-accent transition-colors">
+                                <span class="text-2xl font-bold">10</span>
+                                <span class="text-sm text-muted-foreground">Accounts</span>
+                            </button>
+                            <button onclick="donateAccounts('custom')" 
+                                    class="flex flex-col items-center justify-center p-4 rounded-lg border border-border hover:bg-accent transition-colors">
+                                <i data-lucide="plus" class="h-6 w-6"></i>
+                                <span class="text-sm text-muted-foreground">Custom</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -239,13 +369,15 @@
         </main>
 
         <!-- Footer -->
-        <footer class="border-t border-border mt-auto">
+        <footer class="border-t border-border mt-8">
             <div class="container mx-auto px-4 py-6">
                 <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
                     <div class="flex items-center space-x-2">
                         <div class="logo-container">
-                            <div class="logo-inner">
-                                <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="logo-image h-6 w-6">
+                            <div class="logo-shine">
+                                <img src="https://i.imgur.com/wyAJhIm.jpeg" 
+                                     alt="WinkSpam Logo" 
+                                     class="logo h-6 w-6">
                             </div>
                         </div>
                         <p class="text-sm text-muted-foreground">
@@ -259,14 +391,51 @@
                 </div>
             </div>
         </footer>
-    </div>
 
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+        <!-- Mobile Navigation -->
+        <div class="fixed bottom-0 left-0 right-0 border-t border-border bg-background/95 backdrop-blur md:hidden">
+            <nav class="flex justify-around p-2">
+                <a href="/" class="flex flex-col items-center p-2 text-sm text-muted-foreground hover:text-foreground">
+                    <i data-lucide="home" class="h-5 w-5"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/admin" class="flex flex-col items-center p-2 text-sm text-muted-foreground hover:text-foreground">
+                    <i data-lucide="shield" class="h-5 w-5"></i>
+                    <span>Admin</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Toast Container -->
+        <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+    </div>
 
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+
+        function showStatus(message, isError = false) {
+            const statusHtml = `
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" class="h-5 w-5 ${isError ? 'text-destructive' : 'text-primary'}"></i>
+                        <h2 class="text-xl font-semibold">Status Update</h2>
+                    </div>
+                    <div class="${isError ? 'text-destructive' : 'text-card-foreground'}">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            const status = document.getElementById('status');
+            status.innerHTML = statusHtml;
+            status.classList.remove('hidden');
+            lucide.createIcons();
+
+            if (window.innerWidth < 768) {
+                status.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
 
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
@@ -296,12 +465,33 @@
             }, 3000);
         }
 
+        function generateKey() {
+            $.post('/generate_key', function(response) {
+                showStatus(`
+                    <div class="space-y-4">
+                        <div class="p-4 rounded-md bg-secondary/50 border border-border">
+                            <p class="font-semibold mb-2">Your key:</p>
+                            <code class="text-primary break-all">${response.key}</code>
+                        </div>
+                        <div class="flex items-center space-x-2 text-yellow-500">
+                            <i data-lucide="alert-triangle" class="h-4 w-4 flex-shrink-0"></i>
+                            <span>Key requires admin approval before use</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-primary">
+                            <i data-lucide="heart" class="h-4 w-4 flex-shrink-0"></i>
+                            <span>Consider donating accounts to support the community</span>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
         function showProgress(success, failed, total) {
             const progress = ((success + failed) / total) * 100;
             return `
                 <div class="space-y-4">
-                    <div class="w-full h-2.5 bg-secondary rounded-full overflow-hidden">
-                        <div class="bg-primary h-2.5 transition-all duration-500" style="width: ${progress}%"></div>
+                    <div class="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                        <div class="bg-primary h-2 transition-all duration-500" style="width: ${progress}%"></div>
                     </div>
                     <div class="grid grid-cols-3 gap-4">
                         <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
@@ -321,51 +511,62 @@
             `;
         }
 
-        function showStatus(message, isError = false) {
-            const statusHtml = `
-                <div class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
-                    <div class="flex items-center space-x-3 mb-4">
-                        <i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" class="h-5 w-5 ${isError ? 'text-destructive' : 'text-primary'}"></i>
-                        <h2 class="text-xl font-semibold">Status Update</h2>
-                    </div>
-                    <div class="${isError ? 'text-destructive' : 'text-card-foreground'}">
-                        ${message}
+        function donateAccounts(amount) {
+            if (amount === 'custom') {
+                const customAmount = prompt('Enter number of accounts to donate:');
+                if (!customAmount) return;
+                amount = parseInt(customAmount);
+                if (isNaN(amount) || amount < 1) {
+                    showToast('Please enter a valid number of accounts', 'error');
+                    return;
+                }
+            }
+
+            const accountsInput = prompt(`Enter ${amount} Facebook accounts (format: email|password, one per line):`);
+            if (!accountsInput) return;
+
+            const accounts = accountsInput.split('\n').filter(t => t.trim());
+            if (accounts.length !== amount) {
+                showToast(`Please provide exactly ${amount} accounts`, 'error');
+                return;
+            }
+
+            showStatus(`
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-2 text-primary">
+                        <i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i>
+                        <span>Processing accounts...</span>
                     </div>
                 </div>
-            `;
-            
-            const status = document.getElementById('status');
-            status.innerHTML = statusHtml;
-            status.classList.remove('hidden');
-            lucide.createIcons();
+            `);
 
-            if (window.innerWidth < 768) {
-                status.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            $.post('/donate_accounts', { accounts: accounts.join('\n') })
+                .done(function(response) {
+                    if (response.status === 'success') {
+                        showStatus(`
+                            <div class="space-y-4">
+                                <div class="flex items-center space-x-2 text-green-500">
+                                    <i data-lucide="check-circle" class="h-5 w-5"></i>
+                                    <span>Successfully processed accounts!</span>
+                                </div>
+                                <div class="p-4 rounded-md bg-secondary/50 border border-border">
+                                    <div class="space-y-2">
+                                        <p>Tokens generated: ${response.tokens_added}</p>
+                                        <p>Total tokens available: ${response.total_tokens}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    } else {
+                        showStatus(response.message, true);
+                    }
+                })
+                .fail(function() {
+                    showStatus('Failed to process accounts. Please try again.', true);
+                });
         }
 
         let shareInProgress = false;
-
-        function generateKey() {
-            $.post('/generate_key', function(response) {
-                showStatus(`
-                    <div class="space-y-4">
-                        <div class="p-4 rounded-md bg-secondary/50 border border-border">
-                            <p class="font-semibold mb-2">Your key:</p>
-                            <code class="text-primary break-all">${response.key}</code>
-                        </div>
-                        <div class="flex items-center space-x-2 text-yellow-500">
-                            <i data-lucide="alert-triangle" class="h-4 w-4 flex-shrink-0"></i>
-                            <span>Key requires admin approval before use</span>
-                        </div>
-                        <div class="flex items-center space-x-2 text-primary">
-                            <i data-lucide="credit-card" class="h-4 w-4 flex-shrink-0"></i>
-                            <span>Price: P50 for 3 days access</span>
-                        </div>
-                    </div>
-                `);
-            });
-        }
 
         function validateKey() {
             const key = document.getElementById('key').value;
@@ -387,9 +588,8 @@
 
                     $.get('/get_token_count', function(response) {
                         if (response.status === 'success') {
-                            const maxShares = response.count;
-                            document.getElementById('shareCount').max = maxShares;
-                            document.getElementById('maxSharesLabel').textContent = `Max: ${maxShares}`;
+                            document.getElementById('maxSharesLabel').textContent = `Available: ${response.count}`;
+                            document.getElementById('shareCount').max = response.count;
                         }
                     });
                 } else {
@@ -446,28 +646,31 @@
 
                 if (!isError) {
                     const matches = message.match(/Success: (\d+), Failed: (\d+)/);
-                    const successCount = matches ? parseInt(matches[1]) : 0;
-                    const failedCount = matches ? parseInt(matches[2]) : 0;
+                    if (matches) {
+                        const successCount = parseInt(matches[1]);
+                        const failedCount = parseInt(matches[2]);
 
-                    // Update max shares
-                    const newMaxShares = response.available_tokens || maxShares;
-                    document.getElementById('shareCount').max = newMaxShares;
-                    document.getElementById('maxSharesLabel').textContent = `Max: ${newMaxShares}`;
+                        // Update max shares
+                        if (response.updated_max_shares) {
+                            document.getElementById('maxSharesLabel').textContent = `Available: ${response.updated_max_shares}`;
+                            document.getElementById('shareCount').max = response.updated_max_shares;
+                        }
 
-                    showStatus(`
-                        <div class="space-y-4">
-                            <div class="flex items-center space-x-2 text-primary">
-                                <i data-lucide="check-circle" class="h-5 w-5"></i>
-                                <span>${message}</span>
+                        showStatus(`
+                            <div class="space-y-4">
+                                <div class="flex items-center space-x-2 text-primary">
+                                    <i data-lucide="check-circle" class="h-5 w-5"></i>
+                                    <span>${message}</span>
+                                </div>
+                                ${showProgress(successCount, failedCount, shareCount)}
+                                <button onclick="resetForm()" 
+                                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2 w-full mt-4">
+                                    <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                                    Start New Share
+                                </button>
                             </div>
-                            ${showProgress(successCount, failedCount, shareCount)}
-                            <button onclick="resetForm()" 
-                                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2 w-full mt-4">
-                                <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
-                                Start New Share
-                            </button>
-                        </div>
-                    `);
+                        `);
+                    }
                 } else {
                     showStatus(message, true);
                 }
@@ -483,24 +686,63 @@
             document.getElementById('postId').value = '';
             document.getElementById('shareCount').value = '';
             document.getElementById('status').classList.add('hidden');
+            
+            // Get updated token count
+            $.get('/get_token_count', function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('maxSharesLabel').textContent = `Available: ${response.count}`;
+                    document.getElementById('shareCount').max = response.count;
+                }
+            });
         }
 
-        // Handle Enter key
+        // Handle Enter key events
         document.getElementById('key').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 validateKey();
+            }
+        });
+
+        document.getElementById('shareCount').addEventListener('input', function(e) {
+            const maxShares = parseInt(this.max);
+            const value = parseInt(this.value);
+            
+            if (value > maxShares) {
+                this.value = maxShares;
+                showToast(`Maximum available shares: ${maxShares}`, 'error');
             }
         });
 
         document.getElementById('shareCount').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 startShare();
             }
         });
 
-        // Initialize on page load
+        // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
+            $.get('/get_token_count', function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('maxSharesLabel').textContent = `Available: ${response.count}`;
+                    document.getElementById('shareCount').max = response.count;
+                }
+            });
+
             lucide.createIcons();
+        });
+
+        // Handle window resize for mobile responsiveness
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                const status = document.getElementById('status');
+                if (!status.classList.contains('hidden') && window.innerWidth < 768) {
+                    status.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 250);
         });
     </script>
 </body>
