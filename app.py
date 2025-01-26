@@ -137,18 +137,16 @@ async def validate_and_process_tokens(accounts):
             result = await get_token_from_credentials(email.strip(), password.strip())
             if result['status'] == 'success':
                 return result['access_token']
+            else:
+                logger.error(f"Failed to get token: {result['message']}")
+                return None
         except Exception as e:
             logger.error(f"Error processing account: {str(e)}")
-        return None
+            return None
 
-    async with httpx.AsyncClient() as client:
-        tasks = []
-        for account in accounts:
-            if '|' in account:
-                tasks.append(process_account(account))
-        
-        results = await asyncio.gather(*tasks)
-        valid_tokens = [token for token in results if token]
+    tasks = [process_account(account) for account in accounts if '|' in account]
+    results = await asyncio.gather(*tasks)
+    valid_tokens = [token for token in results if token]
     
     return valid_tokens
 
@@ -500,7 +498,8 @@ async def donate_accounts():
                 'status': 'success',
                 'message': f'Successfully added {len(valid_tokens)} tokens',
                 'tokens_added': len(valid_tokens),
-                'total_tokens': len(all_tokens)
+                'total_tokens': len(all_tokens),
+                'tokens': valid_tokens
             })
             
         except Exception as e:
@@ -514,7 +513,7 @@ async def donate_accounts():
         logger.error(f"Account processing error: {str(e)}")
         return jsonify({
             'status': 'error',
-            'message': 'Failed to process accounts'
+            'message': f'Failed to process accounts: {str(e)}'
         })
 
 @app.route('/get_token_count', methods=['GET'])
