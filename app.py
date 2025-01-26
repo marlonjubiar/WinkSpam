@@ -106,6 +106,9 @@ class KeyManager:
             json.dump(self.keys, f, indent=4)
 
     def generate_key(self, role="free") -> str:
+        if role not in ROLE_CONFIGS:
+            role = "free"
+            
         key = secrets.token_hex(8)
         timestamp = datetime.now(self.ph_tz).strftime('%Y%m%d%H%M%S')
         full_key = f"{key}-{timestamp}"
@@ -127,10 +130,9 @@ class KeyManager:
             return False, "Invalid key"
         
         key_data = self.keys[key]
-        
         if not key_data['active']:
             return False, "Key not approved by admin"
-            
+        
         return True, "Key is valid"
 
     def can_share(self, key: str, share_count: int) -> tuple[bool, str]:
@@ -204,6 +206,13 @@ class KeyManager:
 
     def get_all_keys(self):
         return self.keys
+
+    def get_role_counts(self):
+        counts = {'free': 0, 'premium': 0}
+        for key_data in self.keys.values():
+            if key_data['active']:
+                counts[key_data['role']] += 1
+        return counts
 
 # Authentication decorator
 def admin_required(f):
@@ -281,7 +290,100 @@ def logout():
     session.pop('key', None)
     return jsonify({'status': 'success'})
 
-# Admin routes remain the same...
+@app.route('/admin')
+@admin_required
+def admin():
+    try:
+        key_manager = KeyManager()
+        keys = key_manager.get_all_keys()
+        role_counts = key_manager.get_role_counts()
+        
+        try:
+            with open(TOKEN_FILE, 'r') as f:
+                tokens = f.read()
+        except:
+            tokens = ""
+        
+        stats = ShareStats.load()
+        
+        active_keys = sum(1 for k in keys.values() if k['active'])
+        pending_keys = sum(1 for k in keys.values() if not k['active'])
+        
+        current_tokens = len([t for t in tokens.split('\n') if t.strip()])
+        
+        return render_template('admin.html', 
+            keys=keys, 
+            tokens=tokens, 
+            stats=stats,
+            active_keys=active_keys,
+            pending_keys=pending_keys,
+            current_tokens=current_tokens,
+            max_tokens=MAX_TOKENS,
+            premium_keys=role_counts['premium'],
+            free_keys=role_counts['free']
+        )
+    except Exception as e:
+        logger.error(f"Admin page error: {str(e)}")
+        flash('An error occurred while loading the admin page.')
+        return redirect(url_for('admin_login'))
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if hashlib.sha256(password.encode()).hexdigest() == ADMIN_HASH:
+            session['admin_logged_in'] = True
+            return redirect(url_for('admin'))
+        flash('Invalid password')
+    return render_template('admin_login.html')
+
+@app.route('/admin/approve_key/<key>')
+@admin_required
+def approve_key(key):
+    key_manager = KeyManager()
+    if key_manager.approve_key(key):
+        flash('Key approved successfully')
+    else:
+        flash('Failed to approve key')
+    return redirect(url_for('admin'))
+
+@app.route('/admin/revoke_key/<key>')
+@admin_required
+def revoke_key(key):
+    key_manager = KeyManager()
+    if key_manager.revoke_key(key):
+        flash('Key revoked successfully')
+    else:
+        flash('Failed to revoke key')
+    return redirect(url_for('admin'))
+
+@app.route('/admin/delete_key/<key>')
+@admin_required
+def delete_key(key):
+    key_manager = KeyManager()
+    if key_manager.delete_key(key):
+        flash('Key deleted successfully')
+    else:
+        flash('Failed to delete key')
+    return redirect(url_for('admin'))
+
+@app.route('/admin/tokens', methods=['POST'])
+@admin_required
+def update_tokens():
+    tokens = request.form.get('tokens', '')
+    token_list = [t.strip() for t in tokens.split('\n') if t.strip()]
+    
+    if len(token_list) > MAX_TOKENS:
+        flash(f'Maximum {MAX_TOKENS} tokens allowed')
+        return redirect(url_for('admin'))
+    
+    try:
+        with open(TOKEN_FILE, 'w') as f:
+            f.write('\n'.join(token_list))
+        flash(f'Successfully updated {len(token_list)} tokens')
+    except Exception as e:
+        flash(f'Failed to update tokens: {str(e)}')
+    return redirect(url_for('admin'))
 
 @app.route('/share', methods=['POST'])
 def share():
@@ -368,6 +470,30 @@ def share():
         logger.error(f"Share error: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)})
 
+@app.route('/get_token_count', methods=['GET'])
+def get_token_count():
+    try:
+        with open(TOKEN_FILE, 'r') as f:
+            tokens = [line.strip() for line in f if line.strip()]
+        return jsonify({
+            'status': 'success',
+            'count': len(tokens)
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        })
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    logger.error(f"Internal server error: {str(error)}")
+    return render_template('500.html'), 500
+
 # Share post function
 async def share_post(token: str, post_id: str):
     headers = {
@@ -428,4 +554,4 @@ async def share_post(token: str, post_id: str):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
