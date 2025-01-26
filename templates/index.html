@@ -501,10 +501,56 @@
         <!-- Toast Container -->
         <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
     </div>
-    
+
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+
+        let cooldownInterval;
+        let lastShareTime;
+
+        function updateCooldown() {
+            if (!lastShareTime) return;
+            
+            const now = new Date().getTime();
+            const cooldownEnd = lastShareTime + (60 * 1000); // 60 seconds cooldown
+            const remaining = Math.max(0, cooldownEnd - now);
+            
+            if (remaining > 0) {
+                const seconds = Math.ceil(remaining / 1000);
+                document.getElementById('cooldownTime').textContent = `${seconds}s`;
+            } else {
+                clearInterval(cooldownInterval);
+                document.getElementById('cooldownTimer').classList.add('hidden');
+            }
+        }
+
+        function startCooldown() {
+            lastShareTime = new Date().getTime();
+            document.getElementById('cooldownTimer').classList.remove('hidden');
+            updateCooldown();
+            cooldownInterval = setInterval(updateCooldown, 1000);
+        }
+
+        function updatePlanInfo(keyInfo) {
+            if (!keyInfo) return;
+
+            document.getElementById('planBadge').textContent = keyInfo.role_name;
+            document.getElementById('planType').textContent = keyInfo.role_name;
+            document.getElementById('shareLimit').textContent = keyInfo.share_limit;
+            document.getElementById('planCooldown').textContent = 
+                keyInfo.cooldown > 0 ? `${keyInfo.cooldown} seconds` : 'None';
+            document.getElementById('totalShares').textContent = keyInfo.shares_completed;
+            document.getElementById('lastUsed').textContent = keyInfo.last_used || 'Never';
+
+            // Update share limit info
+            const shareLimitInfo = document.getElementById('shareLimitInfo');
+            if (keyInfo.role === 'free') {
+                shareLimitInfo.textContent = 'Limited to 250 shares per request (1 minute cooldown)';
+            } else {
+                shareLimitInfo.textContent = 'Unlimited shares with no cooldown';
+            }
+        }
 
         // Check for remembered key on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -513,7 +559,6 @@
                     document.getElementById('key').value = response.key;
                     document.getElementById('keySection').style.display = 'none';
                     document.getElementById('shareSection').style.display = 'block';
-                    document.getElementById('settingsBtn').classList.remove('hidden');
                     document.getElementById('logoutBtn').classList.remove('hidden');
                     
                     updatePlanInfo(response.key_info);
@@ -522,540 +567,318 @@
             });
         });
 
-       <script>
-    // Initialize Lucide icons
-    lucide.createIcons();
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `
+                flex items-center space-x-2 rounded-lg border border-border bg-card p-4 shadow-lg
+                ${type === 'success' ? 'text-green-500' : 'text-destructive'}
+                transform transition-all duration-300 opacity-0 translate-y-2
+            `;
+            toast.innerHTML = `
+                <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="h-5 w-5"></i>
+                <span class="text-sm">${message}</span>
+            `;
+            
+            const container = document.getElementById('toast-container');
+            container.appendChild(toast);
+            lucide.createIcons();
 
-    let cooldownInterval;
-    let lastShareTime;
+            requestAnimationFrame(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            });
 
-    // Check for remembered key on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        $.get('/check_session', function(response) {
-            if (response.status === 'success') {
-                document.getElementById('key').value = response.key;
-                document.getElementById('keySection').style.display = 'none';
-                document.getElementById('shareSection').style.display = 'block';
-                document.getElementById('settingsBtn').classList.remove('hidden');
-                document.getElementById('logoutBtn').classList.remove('hidden');
-                
-                updatePlanInfo(response.key_info);
-                updateTokenCount();
-            }
-        });
-    });
-
-    function updatePlanInfo(keyInfo) {
-        if (!keyInfo) return;
-
-        // Update plan badge
-        const planBadge = document.getElementById('planBadge');
-        planBadge.textContent = keyInfo.role_name;
-        planBadge.className = `rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset ${
-            keyInfo.role === 'premium' 
-                ? 'bg-primary/10 text-primary ring-primary/20' 
-                : 'bg-secondary/10 text-secondary-foreground ring-secondary/20'
-        }`;
-
-        // Update settings info
-        document.getElementById('planType').textContent = keyInfo.role_name;
-        document.getElementById('shareLimit').textContent = keyInfo.share_limit;
-        document.getElementById('planCooldown').textContent = 
-            keyInfo.cooldown > 0 ? `${keyInfo.cooldown} seconds` : 'None';
-        document.getElementById('totalShares').textContent = keyInfo.shares_completed;
-        document.getElementById('lastUsed').textContent = keyInfo.last_used || 'Never';
-
-        // Update share limit info
-        const shareLimitInfo = document.getElementById('shareLimitInfo');
-        if (keyInfo.role === 'free') {
-            shareLimitInfo.textContent = 'Limited to 250 shares per request (1 minute cooldown)';
-        } else {
-            shareLimitInfo.textContent = 'Unlimited shares with no cooldown';
-        }
-    }
-
-    function updateCooldown() {
-        if (!lastShareTime) return;
-        
-        const now = new Date().getTime();
-        const cooldownEnd = lastShareTime + (60 * 1000); // 60 seconds cooldown
-        const remaining = Math.max(0, cooldownEnd - now);
-        
-        if (remaining > 0) {
-            const seconds = Math.ceil(remaining / 1000);
-            document.getElementById('cooldownTime').textContent = `${seconds}s`;
-        } else {
-            clearInterval(cooldownInterval);
-            document.getElementById('cooldownTimer').classList.add('hidden');
-        }
-    }
-
-    function startCooldown() {
-        lastShareTime = new Date().getTime();
-        document.getElementById('cooldownTimer').classList.remove('hidden');
-        updateCooldown();
-        cooldownInterval = setInterval(updateCooldown, 1000);
-    }
-
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.className = `
-            flex items-center gap-2 rounded-lg border border-border bg-card p-4 shadow-lg
-            ${type === 'success' ? 'text-green-500' : 'text-destructive'}
-            transform transition-all duration-300 opacity-0 translate-y-2
-        `;
-        toast.innerHTML = `
-            <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="h-5 w-5"></i>
-            <span class="text-sm">${message}</span>
-        `;
-        
-        const container = document.getElementById('toast-container');
-        container.appendChild(toast);
-        lucide.createIcons();
-
-        requestAnimationFrame(() => {
-            toast.classList.remove('opacity-0', 'translate-y-2');
-        });
-
-        setTimeout(() => {
-            toast.classList.add('opacity-0', 'translate-y-2');
             setTimeout(() => {
-                toast.remove();
-            }, 300);
-        }, 3000);
-    }
-
-    function showStatus(message, isError = false) {
-        const statusHtml = `
-            <div class="rounded-lg border border-border bg-card p-6 shadow-lg fade-in">
-                <div class="flex items-center gap-3 mb-4">
-                    <i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" 
-                       class="h-5 w-5 ${isError ? 'text-destructive' : 'text-primary'}"></i>
-                    <h2 class="text-lg font-semibold">Status Update</h2>
-                </div>
-                <div class="${isError ? 'text-destructive' : 'text-card-foreground'}">
-                    ${message}
-                </div>
-            </div>
-        `;
-        
-        const status = document.getElementById('status');
-        status.innerHTML = statusHtml;
-        status.classList.remove('hidden');
-        lucide.createIcons();
-
-        if (window.innerWidth < 768) {
-            status.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
         }
-    }
 
-    function generateKey() {
-        showStatus(`
-            <div class="flex items-center gap-2 mb-4">
-                <div class="loading-spinner"></div>
-                <span>Generating key...</span>
-            </div>
-        `);
-
-        $.post('/generate_key', function(response) {
-            showStatus(`
-                <div class="space-y-4">
-                    <div class="p-4 rounded-md bg-secondary/50 border border-border">
-                        <p class="font-semibold mb-2">Your key:</p>
-                        <code class="text-primary break-all">${response.key}</code>
+        function showStatus(message, isError = false) {
+            const statusHtml = `
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg fade-in">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" class="h-5 w-5 ${isError ? 'text-destructive' : 'text-primary'}"></i>
+                        <h2 class="text-lg font-semibold">Status Update</h2>
                     </div>
-                    <div class="flex items-center gap-2 text-yellow-500">
-                        <i data-lucide="alert-triangle" class="h-4 w-4 flex-shrink-0"></i>
-                        <span>Key requires admin approval before use</span>
+                    <div class="${isError ? 'text-destructive' : 'text-card-foreground'}">
+                        ${message}
                     </div>
                 </div>
-            `);
-        });
-    }
-
-    function showProgress(success, failed, total) {
-        const progress = ((success + failed) / total) * 100;
-        return `
-            <div class="space-y-4">
-                <div class="w-full h-2 bg-secondary rounded-full overflow-hidden">
-                    <div class="bg-primary h-2 transition-all duration-500 progress-bar" 
-                         style="width: ${progress}%"></div>
-                </div>
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
-                        <span class="text-muted-foreground text-sm">Success</span>
-                        <span class="text-xl font-semibold text-green-500">${success}</span>
-                    </div>
-                    <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
-                        <span class="text-muted-foreground text-sm">Failed</span>
-                        <span class="text-xl font-semibold text-destructive">${failed}</span>
-                    </div>
-                    <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
-                        <span class="text-muted-foreground text-sm">Total</span>
-                        <span class="text-xl font-semibold">${total}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    function validateKey() {
-        const key = document.getElementById('key').value;
-        const remember = document.getElementById('rememberKey').checked;
-
-        if (!key) {
-            showStatus('Please enter a key', true);
-            return;
-        }
-
-        showStatus(`
-            <div class="flex items-center gap-2">
-                <div class="loading-spinner"></div>
-                <span>Validating key...</span>
-            </div>
-        `);
-
-        $.post('/validate_key', { 
-            key: key,
-            remember: remember 
-        }, function(response) {
-            if (response.status === 'success') {
-                document.getElementById('keySection').style.display = 'none';
-                document.getElementById('shareSection').style.display = 'block';
-                document.getElementById('settingsBtn').classList.remove('hidden');
-                document.getElementById('logoutBtn').classList.remove('hidden');
-                
-                updatePlanInfo(response.key_info);
-                showStatus(`
-                    <div class="flex items-center gap-2 text-green-500">
-                        <i data-lucide="check-circle" class="h-5 w-5"></i>
-                        <span>Key validated successfully!</span>
-                    </div>
-                `);
-
-                updateTokenCount();
-            } else {
-                showStatus(`
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="x-circle" class="h-5 w-5"></i>
-                        <span>${response.message}</span>
-                    </div>
-                `, true);
-            }
-        });
-    }
-
-    function updateTokenCount() {
-        $.get('/get_token_count', function(response) {
-            if (response.status === 'success') {
-                document.getElementById('maxSharesLabel').textContent = `Available: ${response.count}`;
-                document.getElementById('shareCount').max = response.count;
-            }
-        });
-    }
-
-    let shareInProgress = false;
-
-    function startShare() {
-        if (shareInProgress) return;
-
-        const postId = document.getElementById('postId').value;
-        const shareCount = parseInt(document.getElementById('shareCount').value);
-        const maxShares = parseInt(document.getElementById('shareCount').max);
-
-        if (!postId || !shareCount) {
-            showStatus('Please fill in all fields', true);
-            return;
-        }
-
-        if (shareCount < 1 || shareCount > maxShares) {
-            showStatus(`Share count must be between 1 and ${maxShares}`, true);
-            return;
-        }
-
-        shareInProgress = true;
-        document.getElementById('shareSection').classList.add('opacity-50', 'pointer-events-none');
-
-        showStatus(`
-            <div class="space-y-4">
-                <div class="flex items-center gap-2 text-primary">
-                    <div class="loading-spinner"></div>
-                    <span>Share process started...</span>
-                </div>
-                ${showProgress(0, 0, shareCount)}
-            </div>
-        `);
-
-        $.post('/share', {
-            post_id: postId,
-            share_count: shareCount
-        })
-        .done(function(response) {
-            shareInProgress = false;
-            document.getElementById('shareSection').classList.remove('opacity-50', 'pointer-events-none');
-
-            if (response.status === 'success') {
-                const matches = response.message.match(/Success: (\d+), Failed: (\d+)/);
-                if (matches) {
-                    const successCount = parseInt(matches[1]);
-                    const failedCount = parseInt(matches[2]);
-
-                    if (response.updated_max_shares) {
-                        document.getElementById('maxSharesLabel').textContent = `Available: ${response.updated_max_shares}`;
-                        document.getElementById('shareCount').max = response.updated_max_shares;
-                    }
-
-                    if (response.key_info) {
-                        updatePlanInfo(response.key_info);
-                        
-                        // Start cooldown for free users
-                        if (response.key_info.role === 'free') {
-                            startCooldown();
-                        }
-                    }
-
-                    showStatus(`
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-2 text-primary">
-                                <i data-lucide="check-circle" class="h-5 w-5"></i>
-                                <span>${response.message}</span>
-                            </div>
-                            ${showProgress(successCount, failedCount, shareCount)}
-                            <button onclick="resetForm()" 
-                                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2 w-full mt-4">
-                                <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
-                                Start New Share
-                            </button>
-                        </div>
-                    `);
-                }
-            } else {
-                showStatus(response.message, true);
-            }
-        })
-        .fail(function() {
-            shareInProgress = false;
-            document.getElementById('shareSection').classList.remove('opacity-50', 'pointer-events-none');
-            showStatus('An error occurred while processing your request. Please try again.', true);
-        });
-    }
-
-    function resetForm() {
-        document.getElementById('postId').value = '';
-        document.getElementById('shareCount').value = '';
-        document.getElementById('status').classList.add('hidden');
-        updateTokenCount();
-    }
-
-    // Settings Modal Functions
-    function openSettings() {
-        document.getElementById('settingsModal').classList.remove('hidden');
-        // Update settings info
-        $.get('/get_key_info', function(response) {
-            if (response.status === 'success') {
-                updatePlanInfo(response.key_info);
-            }
-        });
-    }
-
-    function closeSettings() {
-        document.getElementById('settingsModal').classList.add('hidden');
-    }
-
-    // Event Listeners
-    document.getElementById('settingsBtn').addEventListener('click', openSettings);
-
-    document.getElementById('logoutBtn').addEventListener('click', function() {
-        $.post('/logout', function(response) {
-            if (response.status === 'success') {
-                window.location.reload();
-            }
-        });
-    });
-
-    document.getElementById('key').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            validateKey();
-        }
-    });
-
-    document.getElementById('shareCount').addEventListener('input', function(e) {
-        const maxShares = parseInt(this.max);
-        const value = parseInt(this.value);
-        
-        if (value > maxShares) {
-            this.value = maxShares;
-            showToast(`Maximum available shares: ${maxShares}`, 'error');
-        }
-    });
-
-    document.getElementById('shareCount').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            startShare();
-        }
-    });
-
-    // Handle window resize for mobile responsiveness
-    let resizeTimer;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
+            `;
+            
             const status = document.getElementById('status');
-            if (!status.classList.contains('hidden') && window.innerWidth < 768) {
+            status.innerHTML = statusHtml;
+            status.classList.remove('hidden');
+            lucide.createIcons();
+
+            if (window.innerWidth < 768) {
                 status.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-        }, 250);
-    });
-
-    // Close modal when clicking outside
-    document.getElementById('settingsModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeSettings();
         }
-    });
 
-    // Handle escape key for modal
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeSettings();
-        }
-    });
-
-    // Handle Post ID paste
-    document.getElementById('postId').addEventListener('paste', function(e) {
-        e.preventDefault();
-        const text = e.clipboardData.getData('text');
-        
-        // Extract numeric ID if URL is pasted
-        if (text.includes('facebook.com')) {
-            try {
-                const url = new URL(text);
-                const pathParts = url.pathname.split('/');
-                const postId = pathParts[pathParts.length - 1];
-                if (postId && !isNaN(postId)) {
-                    this.value = postId;
-                    return;
-                }
-            } catch (err) {
-                // If URL parsing fails, try to extract numeric ID
-                const matches = text.match(/\d+/);
-                if (matches) {
-                    this.value = matches[0];
-                    return;
-                }
-            }
-        }
-        
-        // If no URL pattern found, just paste the text
-        this.value = text;
-    });
-
-    // Handle input validation
-    document.getElementById('postId').addEventListener('input', function(e) {
-        // Remove any non-numeric characters
-        this.value = this.value.replace(/\D/g, '');
-    });
-
-    // System notifications
-    function requestNotificationPermission() {
-        if ("Notification" in window && Notification.permission !== "granted") {
-            Notification.requestPermission();
-        }
-    }
-
-    function showNotification(title, message) {
-        if ("Notification" in window && Notification.permission === "granted") {
-            new Notification(title, {
-                body: message,
-                icon: '/path/to/your/logo.png'  // Replace with your logo path
+        function generateKey() {
+            $.post('/generate_key', function(response) {
+                showStatus(`
+                    <div class="space-y-4">
+                        <div class="p-4 rounded-md bg-secondary/50 border border-border">
+                            <p class="font-semibold mb-2">Your key:</p>
+                            <code class="text-primary break-all">${response.key}</code>
+                        </div>
+                        <div class="flex items-center space-x-2 text-yellow-500">
+                            <i data-lucide="alert-triangle" class="h-4 w-4 flex-shrink-0"></i>
+                            <span>Key requires admin approval before use</span>
+                        </div>
+                    </div>
+                `);
             });
         }
-    }
 
-    // Progress tracking
-    function updateProgress(current, total) {
-        const percent = (current / total) * 100;
-        const progressBar = document.querySelector('.progress-bar');
-        if (progressBar) {
-            progressBar.style.width = `${percent}%`;
+        function showProgress(success, failed, total) {
+            const progress = ((success + failed) / total) * 100;
+            return `
+                <div class="space-y-4">
+                    <div class="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                        <div class="bg-primary h-2 transition-all duration-500" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
+                            <span class="text-muted-foreground text-sm">Success</span>
+                            <span class="text-xl font-semibold text-green-500">${success}</span>
+                        </div>
+                        <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
+                            <span class="text-muted-foreground text-sm">Failed</span>
+                            <span class="text-xl font-semibold text-destructive">${failed}</span>
+                        </div>
+                        <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
+                            <span class="text-muted-foreground text-sm">Total</span>
+                            <span class="text-xl font-semibold">${total}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
-    }
 
-    // Handle mobile navigation
-    function handleMobileNav() {
-        const width = window.innerWidth;
-        const navItems = document.querySelectorAll('nav span');
-        navItems.forEach(item => {
-            if (width < 640) {
-                item.classList.add('hidden');
-            } else {
-                item.classList.remove('hidden');
+        function validateKey() {
+            const key = document.getElementById('key').value;
+            const remember = document.getElementById('rememberKey').checked;
+
+            if (!key) {
+                showStatus('Please enter a key', true);
+                return;
             }
-        });
-    }
 
-    // Handle theme
-    function setTheme(theme) {
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
+            $.post('/validate_key', { 
+                key: key,
+                remember: remember 
+            }, function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('keySection').style.display = 'none';
+                    document.getElementById('shareSection').style.display = 'block';
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    
+                    updatePlanInfo(response.key_info);
+                    showStatus(`
+                        <div class="flex items-center space-x-2 text-green-500">
+                            <i data-lucide="check-circle" class="h-5 w-5"></i>
+                            <span>Key validated successfully!</span>
+                        </div>
+                    `);
+
+                    updateTokenCount();
+                } else {
+                    showStatus(`
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="x-circle" class="h-5 w-5"></i>
+                            <span>${response.message}</span>
+                        </div>
+                    `, true);
+                }
+            });
         }
-        localStorage.setItem('theme', theme);
-    }
 
-    // Initial setup
-    function initialize() {
-        // Set initial theme
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        setTheme(savedTheme);
+        function updateTokenCount() {
+            $.get('/get_token_count', function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('maxSharesLabel').textContent = `Available: ${response.count}`;
+                    document.getElementById('shareCount').max = response.count;
+                }
+            });
+        }
 
-        // Handle mobile navigation
-        handleMobileNav();
-        window.addEventListener('resize', handleMobileNav);
+        let shareInProgress = false;
 
-        // Request notification permission
-        requestNotificationPermission();
+        function startShare() {
+            if (shareInProgress) return;
 
-        // Initialize tooltips
-        document.querySelectorAll('[data-tooltip]').forEach(element => {
-            element.addEventListener('mouseenter', e => {
-                const tooltip = e.target.getAttribute('data-tooltip');
-                // Show tooltip logic here
+            const postId = document.getElementById('postId').value;
+            const shareCount = parseInt(document.getElementById('shareCount').value);
+            const maxShares = parseInt(document.getElementById('shareCount').max);
+
+            if (!postId || !shareCount) {
+                showStatus('Please fill in all fields', true);
+                return;
+            }
+
+            if (shareCount < 1 || shareCount > maxShares) {
+                showStatus(`Share count must be between 1 and ${maxShares}`, true);
+                return;
+            }
+
+            shareInProgress = true;
+            document.getElementById('shareSection').classList.add('opacity-50', 'pointer-events-none');
+
+            showStatus(`
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-2 text-primary">
+                        <i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i>
+                        <span>Share process started...</span>
+                    </div>
+                    ${showProgress(0, 0, shareCount)}
+                </div>
+            `);
+
+            $.post('/share', {
+                post_id: postId,
+                share_count: shareCount
+            })
+            .done(function(response) {
+                shareInProgress = false;
+                document.getElementById('shareSection').classList.remove('opacity-50', 'pointer-events-none');
+
+                const message = response.message;
+                const isError = response.status === 'error';
+
+                if (!isError) {
+                    const matches = message.match(/Success: (\d+), Failed: (\d+)/);
+                    if (matches) {
+                        const successCount = parseInt(matches[1]);
+                        const failedCount = parseInt(matches[2]);
+
+                        if (response.updated_max_shares) {
+                            document.getElementById('maxSharesLabel').textContent = `Available: ${response.updated_max_shares}`;
+                            document.getElementById('shareCount').max = response.updated_max_shares;
+                        }
+
+                        if (response.key_info) {
+                            updatePlanInfo(response.key_info);
+                            
+                            // Start cooldown for free users
+                            if (response.key_info.role === 'free') {
+                                startCooldown();
+                            }
+                        }
+
+                        showStatus(`
+                            <div class="space-y-4">
+                                <div class="flex items-center space-x-2 text-primary">
+                                    <i data-lucide="check-circle" class="h-5 w-5"></i>
+                                    <span>${message}</span>
+                                </div>
+                                ${showProgress(successCount, failedCount, shareCount)}
+                                <button onclick="resetForm()" 
+                                        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2 w-full mt-4">
+                                    <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                                    Start New Share
+                                </button>
+                            </div>
+                        `);
+                    }
+                } else {
+                    showStatus(message, true);
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                shareInProgress = false;
+                document.getElementById('shareSection').classList.remove('opacity-50', 'pointer-events-none');
+                showStatus('An error occurred while processing your request. Please try again.', true);
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('postId').value = '';
+            document.getElementById('shareCount').value = '';
+            document.getElementById('status').classList.add('hidden');
+            updateTokenCount();
+        }
+
+        // Settings Modal Functions
+        function openSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+            // Update settings info
+            $.get('/get_key_info', function(response) {
+                if (response.status === 'success') {
+                    updatePlanInfo(response.key_info);
+                }
+            });
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        // Event Listeners
+        document.getElementById('settingsBtn').addEventListener('click', openSettings);
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            $.post('/logout', function(response) {
+                if (response.status === 'success') {
+                    window.location.reload();
+                }
             });
         });
 
-        // Check for saved session
-        checkSession();
-    }
-
-    function checkSession() {
-        if (localStorage.getItem('lastSession')) {
-            const lastSession = new Date(localStorage.getItem('lastSession'));
-            const now = new Date();
-            if (now - lastSession < 24 * 60 * 60 * 1000) { // 24 hours
-                // Auto-restore session if within 24 hours
-                const savedKey = localStorage.getItem('sessionKey');
-                if (savedKey) {
-                    document.getElementById('key').value = savedKey;
-                    document.getElementById('rememberKey').checked = true;
-                    validateKey();
-                }
+        // Handle Enter key events
+        document.getElementById('key').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                validateKey();
             }
-        }
-    }
+        });
 
-    // Error handling
-    window.onerror = function(msg, url, lineNo, columnNo, error) {
-        console.error('Error: ', msg, 'URL: ', url, 'Line: ', lineNo, 'Column: ', columnNo, 'Error object: ', error);
-        showToast('An error occurred. Please try again.', 'error');
-        return false;
-    };
+        document.getElementById('shareCount').addEventListener('input', function(e) {
+            const maxShares = parseInt(this.max);
+            const value = parseInt(this.value);
+            
+            if (value > maxShares) {
+                this.value = maxShares;
+                showToast(`Maximum available shares: ${maxShares}`, 'error');
+            }
+        });
 
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', initialize);
-</script>
+        document.getElementById('shareCount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                startShare();
+            }
+        });
+
+        // Handle window resize for mobile responsiveness
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                const status = document.getElementById('status');
+                if (!status.classList.contains('hidden') && window.innerWidth < 768) {
+                    status.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 250);
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('settingsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSettings();
+            }
+        });
+
+        // Handle escape key for modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSettings();
+            }
+        });
+    </script>
 </body>
 </html>
