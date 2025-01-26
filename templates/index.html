@@ -55,133 +55,57 @@
     </script>
     <style>
         :root {
-            --background: 0 0% 0%;
+            --background: 0 0% 3.9%;
             --foreground: 0 0% 98%;
-            --card: 240 10% 3.9%;
+            --card: 0 0% 5.9%;
             --card-foreground: 0 0% 98%;
-            --popover: 240 10% 3.9%;
+            --popover: 0 0% 3.9%;
             --popover-foreground: 0 0% 98%;
-            --primary: 0 0% 98%;
-            --primary-foreground: 240 5.9% 10%;
-            --secondary: 240 3.7% 15.9%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 0 0% 14.9%;
             --secondary-foreground: 0 0% 98%;
-            --muted: 240 3.7% 15.9%;
-            --muted-foreground: 240 5% 64.9%;
-            --accent: 240 3.7% 15.9%;
+            --muted: 0 0% 14.9%;
+            --muted-foreground: 0 0% 63.9%;
+            --accent: 0 0% 14.9%;
             --accent-foreground: 0 0% 98%;
             --destructive: 0 62.8% 30.6%;
             --destructive-foreground: 0 0% 98%;
-            --border: 240 3.7% 15.9%;
-            --input: 240 3.7% 15.9%;
-            --ring: 240 4.9% 83.9%;
+            --border: 0 0% 14.9%;
+            --input: 0 0% 14.9%;
+            --ring: 217.2 91.2% 59.8%;
         }
 
-        .logo-container {
-            position: relative;
-            border-radius: 50%;
-            padding: 2px;
-            background: linear-gradient(
-                45deg,
-                rgba(255, 255, 255, 0.1),
-                rgba(255, 255, 255, 0.2)
-            );
-        }
-
-        .logo-container::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            padding: 2px;
-            background: linear-gradient(
-                45deg,
-                rgba(255, 255, 255, 0.1),
-                rgba(255, 255, 255, 0.05)
-            );
-            mask: linear-gradient(#000, #000) content-box,
-                  linear-gradient(#000, #000);
-            mask-composite: exclude;
-        }
-
-        .logo-shine {
-            position: relative;
-            border-radius: 50%;
-            overflow: hidden;
-            background: black;
-        }
-
-        .logo-shine::after {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                45deg,
-                transparent,
-                rgba(255, 255, 255, 0.1),
-                transparent
-            );
-            animation: shine 2s infinite;
-        }
-
-        .logo {
-            border-radius: 50%;
-            transition: transform 0.2s ease;
-            filter: brightness(1.1);
-        }
-
-        .logo-float {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes shine {
-            0% {
-                transform: translateY(-100%) translateX(-100%) rotate(25deg);
-            }
-            100% {
-                transform: translateY(100%) translateX(100%) rotate(25deg);
-            }
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0);
-            }
+        @keyframes pulse {
             50% {
-                transform: translateY(-5px);
+                opacity: .5;
             }
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
-        .animate-fadeInUp {
-            animation: fadeInUp 0.5s ease-out forwards;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .animate-delay-1 {
-            animation-delay: 0.1s;
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
         }
 
-        .animate-delay-2 {
-            animation-delay: 0.2s;
+        .prose {
+            max-width: 65ch;
+            color: var(--foreground);
         }
 
-        .title-gradient {
-            background: linear-gradient(to right, #fff, #ccc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+        .prose a {
+            color: hsl(var(--primary));
+        }
+
+        .prose strong {
+            color: var(--foreground);
         }
     </style>
 </head>
@@ -189,175 +113,109 @@
     <div class="min-h-screen flex flex-col">
         <!-- Header -->
         <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="container flex h-14 max-w-screen-2xl items-center">
-                <div class="mr-4 flex">
-                    <a href="/" class="flex items-center space-x-2">
-                        <div class="logo-container">
-                            <div class="logo-shine">
-                                <img src="https://i.imgur.com/wyAJhIm.jpeg" 
-                                     alt="WinkSpam Logo" 
-                                     class="logo h-9 w-9"
-                                     width="36"
-                                     height="36">
-                            </div>
+            <div class="container flex h-14 max-w-screen-2xl items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <a href="/" class="flex items-center gap-2">
+                        <div class="bg-primary/10 p-2 rounded-lg">
+                            <i data-lucide="share" class="h-5 w-5 text-primary"></i>
                         </div>
-                        <div class="flex items-center">
-                            <span class="hidden font-bold sm:inline-block">WinkSpam</span>
-                            <span class="ml-2 inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
-                        </div>
+                        <span class="font-semibold">WinkSpam</span>
+                        <span class="rounded-lg bg-primary/10 px-2 py-1 text-xs font-medium text-primary">Beta</span>
                     </a>
                 </div>
-                <div class="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-                    <nav class="flex items-center">
-                        <a href="/admin" 
-                           class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
-                            <i data-lucide="shield" class="h-4 w-4 mr-2"></i>
-                            <span class="hidden sm:inline-block">Admin</span>
-                        </a>
-                    </nav>
-                </div>
+                
+                <nav class="flex items-center gap-4">
+                    <a href="/admin" class="hover:bg-accent hover:text-accent-foreground inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors">
+                        <i data-lucide="shield" class="h-4 w-4"></i>
+                        <span class="hidden sm:inline">Admin</span>
+                    </a>
+                    <button id="logoutBtn" class="hidden hover:bg-destructive/90 bg-destructive text-destructive-foreground inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors">
+                        <i data-lucide="log-out" class="h-4 w-4"></i>
+                        <span class="hidden sm:inline">Logout</span>
+                    </button>
+                </nav>
             </div>
         </header>
 
         <!-- Main Content -->
         <main class="flex-1 container mx-auto px-4 py-8">
-            <!-- Title Section -->
-            <div class="w-full bg-black/50 backdrop-blur-sm border-b border-white/10 mb-8 rounded-lg">
-                <div class="container mx-auto px-4 py-6 text-center">
-                    <div class="flex flex-col items-center justify-center space-y-4">
-                        <div class="logo-container logo-float" style="width: 120px; height: 120px;">
-                            <div class="logo-shine">
-                                <img src="https://i.imgur.com/wyAJhIm.jpeg" 
-                                     alt="WinkSpam Logo" 
-                                     class="logo w-30 h-30 rounded-full"
-                                     width="120"
-                                     height="120">
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <h1 class="text-4xl font-bold title-gradient">
-                                WinkSpam
-                            </h1>
-                            <p class="text-gray-400">Advanced Facebook Share Manager</p>
-                        </div>
-                    </div>
+            <!-- Hero Section -->
+            <div class="text-center space-y-4 mb-8">
+                <div class="inline-block p-4 rounded-full bg-primary/10 animate-pulse">
+                    <i data-lucide="share-2" class="h-12 w-12 text-primary"></i>
                 </div>
+                <h1 class="text-4xl font-bold tracking-tight">WinkSpam Share Tool</h1>
+                <p class="text-muted-foreground max-w-[600px] mx-auto">
+                    Advanced Facebook sharing tool with secure key authentication and real-time progress tracking.
+                </p>
             </div>
 
-            <div class="max-w-2xl mx-auto space-y-6">
-                <!-- Info Card -->
-                <div class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
-                    <div class="relative overflow-hidden">
-                        <div class="flex items-center space-x-3 mb-6">
-                            <i data-lucide="info" class="h-5 w-5"></i>
-                            <h2 class="text-xl font-semibold">Features</h2>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="h-8 w-8 rounded-full bg-blue-400/10 flex items-center justify-center">
-                                    <i data-lucide="zap" class="h-4 w-4 text-blue-400"></i>
-                                </div>
-                                <span>Fast and Reliable Facebook Post Sharing</span>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <div class="h-8 w-8 rounded-full bg-green-400/10 flex items-center justify-center">
-                                    <i data-lucide="shield-check" class="h-4 w-4 text-green-400"></i>
-                                </div>
-                                <span>Secure Key Authentication System</span>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <div class="h-8 w-8 rounded-full bg-yellow-400/10 flex items-center justify-center">
-                                    <i data-lucide="activity" class="h-4 w-4 text-yellow-400"></i>
-                                </div>
-                                <span>Real-time Share Progress Tracking</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="max-w-lg mx-auto space-y-6">
                 <!-- Authentication Section -->
-                <div id="keySection" class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp animate-delay-1">
-                    <div class="flex items-center space-x-3 mb-6">
-                        <i data-lucide="key" class="h-5 w-5"></i>
-                        <h2 class="text-xl font-semibold">Authentication</h2>
-                    </div>
+                <div id="keySection" class="rounded-lg border border-border bg-card p-6 shadow-lg fade-in">
                     <div class="space-y-4">
-                        <div class="relative">
-                            <input type="text" id="key" placeholder="Enter your access key" 
-                                   class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="key" class="h-5 w-5 text-primary"></i>
+                            <h2 class="text-lg font-semibold">Authentication</h2>
                         </div>
-                        <button onclick="validateKey()" 
-                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
-                            <i data-lucide="unlock" class="h-4 w-4 mr-2"></i>
-                            Validate Key
-                        </button>
-                        <div class="text-center">
-                            <span class="text-sm text-muted-foreground">Don't have a key?</span>
-                            <button onclick="generateKey()" 
-                                    class="inline-flex items-center text-sm text-primary hover:text-primary/80 ml-1 transition-colors">
-                                <i data-lucide="plus-circle" class="h-4 w-4 mr-1"></i>
-                                Generate new key
+                        
+                        <div class="space-y-4">
+                            <div class="space-y-2">
+                                <input type="text" id="key" placeholder="Enter your access key" 
+                                       class="w-full px-3 py-2 rounded-md border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                            </div>
+                            
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="rememberKey" class="h-4 w-4 rounded border-input bg-background">
+                                <label for="rememberKey" class="text-sm text-muted-foreground">Remember my key</label>
+                            </div>
+
+                            <button onclick="validateKey()" 
+                                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
+                                <i data-lucide="unlock" class="h-4 w-4 mr-2"></i>
+                                Validate Key
                             </button>
+
+                            <div class="text-center">
+                                <span class="text-sm text-muted-foreground">Don't have a key?</span>
+                                <button onclick="generateKey()" 
+                                        class="inline-flex items-center text-sm text-primary hover:text-primary/80 ml-1">
+                                    <i data-lucide="plus-circle" class="h-4 w-4 mr-1"></i>
+                                    Generate new key
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Share Section -->
-                <div id="shareSection" class="hidden rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
-                    <div class="flex items-center space-x-3 mb-6">
-                        <i data-lucide="share-2" class="h-5 w-5"></i>
-                        <h2 class="text-xl font-semibold">Share Configuration</h2>
-                    </div>
+                <div id="shareSection" class="hidden rounded-lg border border-border bg-card p-6 shadow-lg fade-in">
                     <div class="space-y-4">
-                        <div class="space-y-2">
-                            <label for="postId" class="text-sm font-medium">
-                                Post ID
-                            </label>
-                            <input type="text" id="postId" placeholder="Enter Facebook Post ID" 
-                                   class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="share-2" class="h-5 w-5 text-primary"></i>
+                            <h2 class="text-lg font-semibold">Share Configuration</h2>
                         </div>
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center">
-                                <label for="shareCount" class="text-sm font-medium">
-                                    Number of Shares
-                                </label>
-                                <span class="text-xs text-muted-foreground" id="maxSharesLabel">Available: 0</span>
+                        
+                        <div class="space-y-4">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium">Post ID</label>
+                                <input type="text" id="postId" placeholder="Enter Facebook Post ID" 
+                                       class="w-full px-3 py-2 rounded-md border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                             </div>
-                            <input type="number" id="shareCount" placeholder="1-1000" min="1" max="1000"
-                                   class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors">
-                            <p class="text-xs text-muted-foreground mt-1">Share count will adjust to available tokens</p>
-                        </div>
-                        <button onclick="startShare()" 
-                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
-                            <i data-lucide="play" class="h-4 w-4 mr-2"></i>
-                            Start Share Process
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Account Donation Section -->
-                <div class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp animate-delay-2">
-                    <div class="flex items-center space-x-3 mb-6">
-                        <i data-lucide="heart" class="h-5 w-5 text-red-500"></i>
-                        <h2 class="text-xl font-semibold">Donate Accounts</h2>
-                    </div>
-                    <div class="space-y-4">
-                        <p class="text-sm text-muted-foreground">Support the community by donating Facebook accounts.</p>
-                        <div class="grid grid-cols-3 gap-4">
-                            <button onclick="donateAccounts(5)" 
-                                    class="flex flex-col items-center justify-center p-4 rounded-lg border border-border hover:bg-accent transition-colors">
-                                <span class="text-2xl font-bold">5</span>
-                                <span class="text-sm text-muted-foreground">Accounts</span>
-                            </button>
-                            <button onclick="donateAccounts(10)" 
-                                    class="flex flex-col items-center justify-center p-4 rounded-lg border border-border hover:bg-accent transition-colors">
-                                <span class="text-2xl font-bold">10</span>
-                                <span class="text-sm text-muted-foreground">Accounts</span>
-                            </button>
-                            <button onclick="donateAccounts('custom')" 
-                                    class="flex flex-col items-center justify-center p-4 rounded-lg border border-border hover:bg-accent transition-colors">
-                                <i data-lucide="plus" class="h-6 w-6"></i>
-                                <span class="text-sm text-muted-foreground">Custom</span>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <label class="text-sm font-medium">Number of Shares</label>
+                                    <span id="maxSharesLabel" class="text-sm text-muted-foreground">Available: 0</span>
+                                </div>
+                                <input type="number" id="shareCount" placeholder="1-1000" min="1" max="1000"
+                                       class="w-full px-3 py-2 rounded-md border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                            </div>
+
+                            <button onclick="startShare()" 
+                                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
+                                <i data-lucide="play" class="h-4 w-4 mr-2"></i>
+                                Start Share Process
                             </button>
                         </div>
                     </div>
@@ -371,40 +229,22 @@
         <!-- Footer -->
         <footer class="border-t border-border mt-8">
             <div class="container mx-auto px-4 py-6">
-                <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
-                    <div class="flex items-center space-x-2">
-                        <div class="logo-container">
-                            <div class="logo-shine">
-                                <img src="https://i.imgur.com/wyAJhIm.jpeg" 
-                                     alt="WinkSpam Logo" 
-                                     class="logo h-6 w-6">
-                            </div>
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-primary/10 p-2 rounded-lg">
+                            <i data-lucide="share" class="h-4 w-4 text-primary"></i>
                         </div>
                         <p class="text-sm text-muted-foreground">
                             &copy; {{ now().year }} WinkSpam. All rights reserved.
                         </p>
                     </div>
-                    <div class="text-sm text-muted-foreground flex items-center space-x-2">
-                        <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
-                        <span>v1.0.0</span>
+                    <div class="flex items-center gap-2">
+                        <span class="rounded-lg bg-primary/10 px-2 py-1 text-xs font-medium text-primary">Beta</span>
+                        <span class="text-sm text-muted-foreground">v1.0.0</span>
                     </div>
                 </div>
             </div>
         </footer>
-
-        <!-- Mobile Navigation -->
-        <div class="fixed bottom-0 left-0 right-0 border-t border-border bg-background/95 backdrop-blur md:hidden">
-            <nav class="flex justify-around p-2">
-                <a href="/" class="flex flex-col items-center p-2 text-sm text-muted-foreground hover:text-foreground">
-                    <i data-lucide="home" class="h-5 w-5"></i>
-                    <span>Home</span>
-                </a>
-                <a href="/admin" class="flex flex-col items-center p-2 text-sm text-muted-foreground hover:text-foreground">
-                    <i data-lucide="shield" class="h-5 w-5"></i>
-                    <span>Admin</span>
-                </a>
-            </nav>
-        </div>
 
         <!-- Toast Container -->
         <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
@@ -414,12 +254,27 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
+        // Check for remembered key on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            $.get('/check_session', function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('key').value = response.key;
+                    document.getElementById('keySection').style.display = 'none';
+                    document.getElementById('shareSection').style.display = 'block';
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    
+                    // Get token count
+                    updateTokenCount();
+                }
+            });
+        });
+
         function showStatus(message, isError = false) {
             const statusHtml = `
-                <div class="rounded-lg border border-border bg-card p-6 shadow-lg animate-fadeInUp">
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg fade-in">
                     <div class="flex items-center space-x-3 mb-4">
                         <i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" class="h-5 w-5 ${isError ? 'text-destructive' : 'text-primary'}"></i>
-                        <h2 class="text-xl font-semibold">Status Update</h2>
+                        <h2 class="text-lg font-semibold">Status Update</h2>
                     </div>
                     <div class="${isError ? 'text-destructive' : 'text-card-foreground'}">
                         ${message}
@@ -477,10 +332,6 @@
                             <i data-lucide="alert-triangle" class="h-4 w-4 flex-shrink-0"></i>
                             <span>Key requires admin approval before use</span>
                         </div>
-                        <div class="flex items-center space-x-2 text-primary">
-                            <i data-lucide="heart" class="h-4 w-4 flex-shrink-0"></i>
-                            <span>Consider donating accounts to support the community</span>
-                        </div>
                     </div>
                 `);
             });
@@ -511,89 +362,24 @@
             `;
         }
 
-        function donateAccounts(amount) {
-            if (amount === 'custom') {
-                const customAmount = prompt('Enter number of accounts to donate:');
-                if (!customAmount) return;
-                amount = parseInt(customAmount);
-                if (isNaN(amount) || amount < 1) {
-                    showToast('Please enter a valid number of accounts', 'error');
-                    return;
-                }
-            }
-
-            const accountsInput = prompt(`Enter ${amount} Facebook accounts (format: email|password, one per line):`);
-            if (!accountsInput) return;
-
-            const accounts = accountsInput.split('\n').filter(t => t.trim());
-            if (accounts.length !== amount) {
-                showToast(`Please provide exactly ${amount} accounts`, 'error');
-                return;
-            }
-
-            showStatus(`
-                <div class="space-y-4">
-                    <div class="flex items-center space-x-2 text-primary">
-                        <i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i>
-                        <span>Processing accounts...</span>
-                    </div>
-                </div>
-            `);
-
-            fetch('/donate_accounts', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `accounts=${encodeURIComponent(accounts.join('\n'))}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    showStatus(`
-                        <div class="space-y-4">
-                            <div class="flex items-center space-x-2 text-green-500">
-                                <i data-lucide="check-circle" class="h-5 w-5"></i>
-                                <span>Successfully processed accounts!</span>
-                            </div>
-                            <div class="p-4 rounded-md bg-secondary/50 border border-border">
-                                <div class="space-y-2">
-                                    <p>Tokens generated: ${data.tokens_added}</p>
-                                    <p>Total tokens available: ${data.total_tokens}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `);
-                    
-                    // Update max shares count
-                    document.getElementById('maxSharesLabel').textContent = `Available: ${data.total_tokens}`;
-                    document.getElementById('shareCount').max = data.total_tokens;
-                } else {
-                    showStatus(`
-                        <div class="flex items-center space-x-2 text-destructive">
-                            <i data-lucide="alert-circle" class="h-5 w-5"></i>
-                            <span>${data.message}</span>
-                        </div>
-                    `, true);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showStatus('Failed to process accounts. Please try again.', true);
-            });
-        }
-
         function validateKey() {
             const key = document.getElementById('key').value;
+            const remember = document.getElementById('rememberKey').checked;
+
             if (!key) {
                 showStatus('Please enter a key', true);
                 return;
             }
 
-            $.post('/validate_key', { key: key }, function(response) {
+            $.post('/validate_key', { 
+                key: key,
+                remember: remember 
+            }, function(response) {
                 if (response.status === 'success') {
                     document.getElementById('keySection').style.display = 'none';
                     document.getElementById('shareSection').style.display = 'block';
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    
                     showStatus(`
                         <div class="flex items-center space-x-2 text-green-500">
                             <i data-lucide="check-circle" class="h-5 w-5"></i>
@@ -601,12 +387,7 @@
                         </div>
                     `);
 
-                    $.get('/get_token_count', function(response) {
-                        if (response.status === 'success') {
-                            document.getElementById('maxSharesLabel').textContent = `Available: ${response.count}`;
-                            document.getElementById('shareCount').max = response.count;
-                        }
-                    });
+                    updateTokenCount();
                 } else {
                     showStatus(`
                         <div class="flex items-center space-x-2">
@@ -614,6 +395,15 @@
                             <span>${response.message}</span>
                         </div>
                     `, true);
+                }
+            });
+        }
+
+        function updateTokenCount() {
+            $.get('/get_token_count', function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('maxSharesLabel').textContent = `Available: ${response.count}`;
+                    document.getElementById('shareCount').max = response.count;
                 }
             });
         }
@@ -667,7 +457,6 @@
                         const successCount = parseInt(matches[1]);
                         const failedCount = parseInt(matches[2]);
 
-                        // Update max shares
                         if (response.updated_max_shares) {
                             document.getElementById('maxSharesLabel').textContent = `Available: ${response.updated_max_shares}`;
                             document.getElementById('shareCount').max = response.updated_max_shares;
@@ -703,15 +492,16 @@
             document.getElementById('postId').value = '';
             document.getElementById('shareCount').value = '';
             document.getElementById('status').classList.add('hidden');
-            
-            // Get updated token count
-            $.get('/get_token_count', function(response) {
+            updateTokenCount();
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            $.post('/logout', function(response) {
                 if (response.status === 'success') {
-                    document.getElementById('maxSharesLabel').textContent = `Available: ${response.count}`;
-                    document.getElementById('shareCount').max = response.count;
+                    window.location.reload();
                 }
             });
-        }
+        });
 
         // Handle Enter key events
         document.getElementById('key').addEventListener('keypress', function(e) {
@@ -736,18 +526,6 @@
                 e.preventDefault();
                 startShare();
             }
-        });
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            $.get('/get_token_count', function(response) {
-                if (response.status === 'success') {
-                    document.getElementById('maxSharesLabel').textContent = `Available: ${response.count}`;
-                    document.getElementById('shareCount').max = response.count;
-                }
-            });
-
-            lucide.createIcons();
         });
 
         // Handle window resize for mobile responsiveness
