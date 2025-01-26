@@ -321,7 +321,7 @@
                                 <label for="shareCount" class="text-sm font-medium">
                                     Number of Shares
                                 </label>
-                                    <span class="text-xs text-muted-foreground" id="maxSharesLabel">Available: 0</span>
+                                <span class="text-xs text-muted-foreground" id="maxSharesLabel">Available: 0</span>
                             </div>
                             <input type="number" id="shareCount" placeholder="1-1000" min="1" max="1000"
                                    class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors">
@@ -540,33 +540,48 @@
                 </div>
             `);
 
-            $.post('/donate_accounts', { accounts: accounts.join('\n') })
-                .done(function(response) {
-                    if (response.status === 'success') {
-                        showStatus(`
-                            <div class="space-y-4">
-                                <div class="flex items-center space-x-2 text-green-500">
-                                    <i data-lucide="check-circle" class="h-5 w-5"></i>
-                                    <span>Successfully processed accounts!</span>
-                                </div>
-                                <div class="p-4 rounded-md bg-secondary/50 border border-border">
-                                    <div class="space-y-2">
-                                        <p>Tokens generated: ${response.tokens_added}</p>
-                                        <p>Total tokens available: ${response.total_tokens}</p>
-                                    </div>
+            fetch('/donate_accounts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `accounts=${encodeURIComponent(accounts.join('\n'))}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus(`
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-2 text-green-500">
+                                <i data-lucide="check-circle" class="h-5 w-5"></i>
+                                <span>Successfully processed accounts!</span>
+                            </div>
+                            <div class="p-4 rounded-md bg-secondary/50 border border-border">
+                                <div class="space-y-2">
+                                    <p>Tokens generated: ${data.tokens_added}</p>
+                                    <p>Total tokens available: ${data.total_tokens}</p>
                                 </div>
                             </div>
-                        `);
-                    } else {
-                        showStatus(response.message, true);
-                    }
-                })
-                .fail(function() {
-                    showStatus('Failed to process accounts. Please try again.', true);
-                });
+                        </div>
+                    `);
+                    
+                    // Update max shares count
+                    document.getElementById('maxSharesLabel').textContent = `Available: ${data.total_tokens}`;
+                    document.getElementById('shareCount').max = data.total_tokens;
+                } else {
+                    showStatus(`
+                        <div class="flex items-center space-x-2 text-destructive">
+                            <i data-lucide="alert-circle" class="h-5 w-5"></i>
+                            <span>${data.message}</span>
+                        </div>
+                    `, true);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showStatus('Failed to process accounts. Please try again.', true);
+            });
         }
-
-        let shareInProgress = false;
 
         function validateKey() {
             const key = document.getElementById('key').value;
@@ -602,6 +617,8 @@
                 }
             });
         }
+
+        let shareInProgress = false;
 
         function startShare() {
             if (shareInProgress) return;
