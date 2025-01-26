@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
@@ -54,28 +55,6 @@
     </script>
     <style>
         :root {
-            --background: 0 0% 100%;
-            --foreground: 240 10% 3.9%;
-            --card: 0 0% 100%;
-            --card-foreground: 240 10% 3.9%;
-            --popover: 0 0% 100%;
-            --popover-foreground: 240 10% 3.9%;
-            --primary: 240 5.9% 10%;
-            --primary-foreground: 0 0% 98%;
-            --secondary: 240 4.8% 95.9%;
-            --secondary-foreground: 240 5.9% 10%;
-            --muted: 240 4.8% 95.9%;
-            --muted-foreground: 240 3.8% 46.1%;
-            --accent: 240 4.8% 95.9%;
-            --accent-foreground: 240 5.9% 10%;
-            --destructive: 0 84.2% 60.2%;
-            --destructive-foreground: 0 0% 98%;
-            --border: 240 5.9% 90%;
-            --input: 240 5.9% 90%;
-            --ring: 240 5.9% 10%;
-        }
-
-        .dark {
             --background: 0 0% 0%;
             --foreground: 0 0% 98%;
             --card: 240 10% 3.9%;
@@ -97,14 +76,46 @@
             --ring: 240 4.9% 83.9%;
         }
 
-        .logo-shadow {
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        .logo-container {
+            position: relative;
+            border-radius: 50%;
+            padding: 2px;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2));
         }
 
-        @keyframes fadeIn {
+        .logo-shine {
+            position: relative;
+            border-radius: 50%;
+            overflow: hidden;
+            background: black;
+        }
+
+        .logo-shine::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shine 2s infinite;
+        }
+
+        .logo {
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+            filter: brightness(1.1);
+        }
+
+        @keyframes shine {
+            0% { transform: translateY(-100%) translateX(-100%) rotate(25deg); }
+            100% { transform: translateY(100%) translateX(100%) rotate(25deg); }
+        }
+
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -112,8 +123,8 @@
             }
         }
 
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
+        .animate-fadeInUp {
+            animation: fadeInUp 0.5s ease-out forwards;
         }
 
         .table-scrollbar {
@@ -137,265 +148,328 @@
         }
     </style>
 </head>
-<body class="bg-background text-foreground font-sans antialiased min-h-screen">
-    <!-- Header -->
-    <header class="border-b border-border/50 backdrop-blur-sm bg-background/95 sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="h-8 w-8 logo-shadow">
-                    <span class="text-lg font-semibold">WinkSpam Admin</span>
-                    <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/" class="flex items-center space-x-2 hover:text-muted-foreground transition-colors">
-                        <i data-lucide="home" class="h-5 w-5"></i>
-                        <span class="hidden sm:inline">Home</span>
+<body class="bg-background text-foreground font-sans antialiased">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div class="container flex h-14 max-w-screen-2xl items-center">
+                <div class="mr-4 flex">
+                    <a href="/" class="flex items-center space-x-2">
+                        <div class="logo-container">
+                            <div class="logo-shine">
+                                <img src="https://i.imgur.com/wyAJhIm.jpeg" 
+                                     alt="WinkSpam Logo" 
+                                     class="logo h-9 w-9"
+                                     width="36"
+                                     height="36">
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="hidden font-bold sm:inline-block">WinkSpam Admin</span>
+                            <span class="ml-2 inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
+                        </div>
                     </a>
                 </div>
+                <div class="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+                    <nav class="flex items-center space-x-4">
+                        <a href="/" class="flex items-center space-x-2 hover:text-muted-foreground transition-colors">
+                            <i data-lucide="home" class="h-5 w-5"></i>
+                            <span class="hidden sm:inline">Home</span>
+                        </a>
+                    </nav>
+                </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="mb-6 flex items-center space-x-2 rounded-lg border border-green-500/20 bg-green-500/10 p-4 text-green-500 animate-fade-in">
-                        <i data-lucide="check-circle" class="h-5 w-5"></i>
-                        <span>{{ message }}</span>
+        <!-- Main Content -->
+        <main class="flex-1 container mx-auto px-4 py-8">
+            <!-- Welcome Banner -->
+            <div class="relative overflow-hidden rounded-lg border border-border bg-card p-8 mb-8">
+                <div class="flex items-center justify-between">
+                    <div class="space-y-2">
+                        <h1 class="text-2xl font-bold">Welcome to Admin Panel</h1>
+                        <p class="text-muted-foreground">
+                            Manage your system settings and monitor performance
+                        </p>
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <!-- Welcome Banner -->
-        <div class="mb-8 rounded-lg border border-border/50 bg-card p-6 shadow-lg">
-            <div class="flex items-center justify-between">
-                <div class="space-y-1">
-                    <h1 class="text-2xl font-bold">Welcome to Admin Panel</h1>
-                    <p class="text-muted-foreground">Manage your tokens, keys, and monitor system performance</p>
-                </div>
-                <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="h-12 w-12 logo-shadow hidden sm:block">
-            </div>
-        </div>
-
-        <!-- Overview Cards -->
-        <div class="grid gap-6 mb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            <!-- Total Shares Card -->
-            <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium">Total Shares</h3>
-                    <div class="p-2 rounded-full bg-blue-400/10">
-                        <i data-lucide="activity" class="h-5 w-5 text-blue-400"></i>
+                    <div class="hidden sm:block">
+                        <div class="logo-container logo-float">
+                            <div class="logo-shine">
+                                <img src="https://i.imgur.com/wyAJhIm.jpeg" 
+                                     alt="WinkSpam Logo" 
+                                     class="logo h-16 w-16"
+                                     width="64"
+                                     height="64">
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-3xl font-bold">{{ stats.total_shares }}</p>
-                    <p class="text-sm text-muted-foreground">Lifetime share count</p>
-                </div>
-            </div>
-            
-            <!-- Success Rate Card -->
-            <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium">Success Rate</h3>
-                    <div class="p-2 rounded-full bg-green-400/10">
-                        <i data-lucide="percent" class="h-5 w-5 text-green-400"></i>
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-3xl font-bold">
-                        {% if stats.total_shares > 0 %}
-                            {{ "%.1f"|format(stats.successful_shares / stats.total_shares * 100) }}%
-                        {% else %}
-                            0%
-                        {% endif %}
-                    </p>
-                    <p class="text-sm text-muted-foreground">Average success rate</p>
-                </div>
-            </div>
-            
-            <!-- Active Keys Card -->
-            <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium">Active Keys</h3>
-                    <div class="p-2 rounded-full bg-yellow-400/10">
-                        <i data-lucide="key" class="h-5 w-5 text-yellow-400"></i>
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-3xl font-bold">{{ active_keys }}</p>
-                    <p class="text-sm text-muted-foreground">Currently active</p>
-                </div>
-            </div>
-            
-            <!-- Pending Keys Card -->
-            <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-medium">Pending Keys</h3>
-                    <div class="p-2 rounded-full bg-orange-400/10">
-                        <i data-lucide="hourglass" class="h-5 w-5 text-orange-400"></i>
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-3xl font-bold">{{ pending_keys }}</p>
-                    <p class="text-sm text-muted-foreground">Awaiting approval</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Key Management Section -->
-        <div class="rounded-lg border border-border bg-card p-6 mb-8 shadow-lg">
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center space-x-3">
-                    <i data-lucide="key" class="h-6 w-6"></i>
-                    <h2 class="text-2xl font-semibold">Key Management</h2>
-                </div>
-                <div class="flex space-x-3">
-                    <span class="inline-flex items-center rounded-full bg-green-500/10 px-3 py-1 text-sm text-green-500">
-                        <i data-lucide="check" class="h-4 w-4 mr-1"></i>
-                        {{ active_keys }} Active
-                    </span>
-                    <span class="inline-flex items-center rounded-full bg-yellow-500/10 px-3 py-1 text-sm text-yellow-500">
-                        <i data-lucide="clock" class="h-4 w-4 mr-1"></i>
-                        {{ pending_keys }} Pending
-                    </span>
                 </div>
             </div>
 
-            <div class="overflow-x-auto table-scrollbar">
-                <table class="w-full min-w-[800px]">
-                    <thead>
-                        <tr class="border-b border-border">
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Key</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Created</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Expires</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Shares</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border">
-                        {% for key, data in keys.items() %}
-                        <tr class="hover:bg-muted/50 transition-colors">
-                            <td class="py-3 px-4">
-                                <div class="font-medium">{{ key }}</div>
-                                <div class="text-xs text-muted-foreground">Last used: {{ data.last_used or 'Never' }}</div>
-                            </td>
-                            <td class="py-3 px-4 text-sm text-muted-foreground">{{ data.created_at }}</td>
-                            <td class="py-3 px-4 text-sm text-muted-foreground">{{ data.expiry }}</td>
-                            <td class="py-3 px-4">
-                                {% if data.active %}
-                                <span class="inline-flex items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-500">
-                                    <i data-lucide="check" class="h-3 w-3 mr-1"></i>
-                                    Active
-                                </span>
-                                {% else %}
-                                <span class="inline-flex items-center rounded-full bg-yellow-500/10 px-2.5 py-0.5 text-xs font-medium text-yellow-500">
-                                    <i data-lucide="clock" class="h-3 w-3 mr-1"></i>
-                                    Pending
-                                </span>
-                                {% endif %}
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="text-sm font-medium">{{ data.shares_completed|default(0) }}</div>
-                                <div class="text-xs text-muted-foreground">Total shares</div>
-                            </td>
-                            <td class="py-3 px-4">
-                                <div class="flex space-x-3">
-                                    {% if not data.active %}
-                                    <button onclick="confirmAction('{{ url_for('approve_key', key=key) }}', 'approve')" 
-                                            class="inline-flex items-center text-sm text-green-500 hover:text-green-400 transition-colors">
-                                        <i data-lucide="check" class="h-4 w-4 mr-1"></i>
-                                        Approve
-                                    </button>
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="mb-6 flex items-center space-x-2 rounded-lg border border-green-500/20 bg-green-500/10 p-4 text-green-500 animate-fadeInUp">
+                            <i data-lucide="check-circle" class="h-5 w-5"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Overview Cards -->
+            <div class="grid gap-6 mb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <!-- Total Shares Card -->
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium">Total Shares</h3>
+                        <div class="p-2 rounded-full bg-blue-400/10">
+                            <i data-lucide="activity" class="h-5 w-5 text-blue-400"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-3xl font-bold">{{ stats.total_shares }}</p>
+                        <p class="text-sm text-muted-foreground">Lifetime share count</p>
+                    </div>
+                </div>
+                
+                <!-- Success Rate Card -->
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium">Success Rate</h3>
+                        <div class="p-2 rounded-full bg-green-400/10">
+                            <i data-lucide="percent" class="h-5 w-5 text-green-400"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-3xl font-bold">
+                            {% if stats.total_shares > 0 %}
+                                {{ "%.1f"|format(stats.successful_shares / stats.total_shares * 100) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </p>
+                        <p class="text-sm text-muted-foreground">Average success rate</p>
+                    </div>
+                </div>
+                
+                <!-- Active Keys Card -->
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium">Active Keys</h3>
+                        <div class="p-2 rounded-full bg-yellow-400/10">
+                            <i data-lucide="key" class="h-5 w-5 text-yellow-400"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-3xl font-bold">{{ active_keys }}</p>
+                        <p class="text-sm text-muted-foreground">Currently active</p>
+                    </div>
+                </div>
+                
+                <!-- Token Count Card -->
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium">Available Tokens</h3>
+                        <div class="p-2 rounded-full bg-orange-400/10">
+                            <i data-lucide="database" class="h-5 w-5 text-orange-400"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-3xl font-bold">{{ current_tokens }}</p>
+                        <p class="text-sm text-muted-foreground">Active tokens</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Management Section -->
+            <div class="rounded-lg border border-border bg-card p-6 mb-8 shadow-lg">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="key" class="h-6 w-6"></i>
+                        <h2 class="text-2xl font-semibold">Key Management</h2>
+                    </div>
+                    <div class="flex space-x-3">
+                        <span class="inline-flex items-center rounded-full bg-green-500/10 px-3 py-1 text-sm text-green-500">
+                            <i data-lucide="check" class="h-4 w-4 mr-1"></i>
+                            {{ active_keys }} Active
+                        </span>
+                        <span class="inline-flex items-center rounded-full bg-yellow-500/10 px-3 py-1 text-sm text-yellow-500">
+                            <i data-lucide="clock" class="h-4 w-4 mr-1"></i>
+                            {{ pending_keys }} Pending
+                        </span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto table-scrollbar">
+                    <table class="w-full min-w-[800px]">
+                        <thead>
+                            <tr class="border-b border-border">
+                                <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Key</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Created</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Expires</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Shares</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                            {% for key, data in keys.items() %}
+                            <tr class="hover:bg-muted/50 transition-colors">
+                                <td class="py-3 px-4">
+                                    <div class="font-medium">{{ key }}</div>
+                                    <div class="text-xs text-muted-foreground">Last used: {{ data.last_used or 'Never' }}</div>
+                                </td>
+                                <td class="py-3 px-4 text-sm text-muted-foreground">{{ data.created_at }}</td>
+                                <td class="py-3 px-4 text-sm text-muted-foreground">{{ data.expiry }}</td>
+                                <td class="py-3 px-4">
+                                    {% if data.active %}
+                                    <span class="inline-flex items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-500">
+                                        <i data-lucide="check" class="h-3 w-3 mr-1"></i>
+                                        Active
+                                    </span>
                                     {% else %}
-                                    <button onclick="confirmAction('{{ url_for('revoke_key', key=key) }}', 'revoke')"
-                                            class="inline-flex items-center text-sm text-yellow-500 hover:text-yellow-400 transition-colors">
-                                        <i data-lucide="ban" class="h-4 w-4 mr-1"></i>
-                                        Revoke
-                                    </button>
+                                    <span class="inline-flex items-center rounded-full bg-yellow-500/10 px-2.5 py-0.5 text-xs font-medium text-yellow-500">
+                                        <i data-lucide="clock" class="h-3 w-3 mr-1"></i>
+                                        Pending
+                                    </span>
                                     {% endif %}
-                                    <button onclick="confirmAction('{{ url_for('delete_key', key=key) }}', 'delete')"
-                                            class="inline-flex items-center text-sm text-destructive hover:text-destructive/80 transition-colors">
-                                        <i data-lucide="trash-2" class="h-4 w-4 mr-1"></i>
-                                        Delete
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="text-sm font-medium">{{ data.shares_completed|default(0) }}</div>
+                                    <div class="text-xs text-muted-foreground">Total shares</div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex space-x-3">
+                                        {% if not data.active %}
+                                        <button onclick="confirmAction('{{ url_for('approve_key', key=key) }}', 'approve')" 
+                                                class="inline-flex items-center text-sm text-green-500 hover:text-green-400 transition-colors">
+                                            <i data-lucide="check" class="h-4 w-4 mr-1"></i>
+                                            Approve
+                                        </button>
+                                        {% else %}
+                                        <button onclick="confirmAction('{{ url_for('revoke_key', key=key) }}', 'revoke')"
+                                                class="inline-flex items-center text-sm text-yellow-500 hover:text-yellow-400 transition-colors">
+                                            <i data-lucide="ban" class="h-4 w-4 mr-1"></i>
+                                            Revoke
+                                        </button>
+                                        {% endif %}
+                                        <button onclick="confirmAction('{{ url_for('delete_key', key=key) }}', 'delete')"
+                                                class="inline-flex items-center text-sm text-destructive hover:text-destructive/80 transition-colors">
+                                            <i data-lucide="trash-2" class="h-4 w-4 mr-1"></i>
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <!-- Token Management Section -->
-        <div class="rounded-lg border border-border bg-card p-6 shadow-lg">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center space-x-3">
-                    <i data-lucide="key-square" class="h-6 w-6"></i>
-                    <h2 class="text-2xl font-semibold">Token Management</h2>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <div class="text-sm text-muted-foreground" id="tokenCount">
-                        <span class="font-medium">0</span>/1000 tokens
+            <!-- Token Management Section -->
+            <div class="rounded-lg border border-border bg-card p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="database" class="h-6 w-6"></i>
+                        <h2 class="text-2xl font-semibold">Token Management</h2>
                     </div>
-                </div>
-            </div>
-            
-            <form action="{{ url_for('update_tokens') }}" method="POST" class="space-y-4" id="tokenForm">
-                <div class="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2 text-sm text-muted-foreground">
                         <i data-lucide="info" class="h-4 w-4"></i>
-                        <span>Enter one token per line (Maximum 1000 tokens)</span>
+                        <span id="tokenCount">{{ current_tokens }}/1000 tokens</span>
                     </div>
                 </div>
                 
-                <div class="relative">
-                    <textarea name="tokens" 
-                            rows="10" 
-                            class="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors resize-y"
-                            placeholder="Enter your tokens here..."
-                            onInput="updateTokenCount(this)">{{ tokens }}</textarea>
-                    
-                    <div class="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded-md">
-                        <span id="lineCount">0 lines</span>
-                    </div>
-                </div>
-                
-                <button type="submit" 
-                        class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-full h-10 transition-colors">
-                    <i data-lucide="save" class="h-4 w-4 mr-2"></i>
-                    Save Tokens
-                </button>
-            </form>
-        </div>
-    </main>
+                <form action="{{ url_for('update_tokens') }}" method="POST" class="space-y-4" id="tokenForm">
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <textarea name="tokens" 
+                                    rows="10" 
+                                    class="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors resize-y table-scrollbar"
+                                    placeholder="Enter your tokens here (one token per line)..."
+                                    onInput="updateTokenCount(this)">{{ tokens }}</textarea>
+                            
+                            <div class="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded-md">
+                                <span id="lineCount">0 lines</span>
+                            </div>
+                        </div>
 
-    <!-- Footer -->
-    <footer class="border-t border-border mt-8">
-        <div class="container mx-auto px-4 py-6">
-            <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
-                <div class="flex items-center space-x-2">
-                    <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="h-6 w-6">
-                    <p class="text-sm text-muted-foreground">
-                        &copy; {{ now().year }} WinkSpam. All rights reserved.
-                    </p>
+                        <div class="flex items-center justify-between">
+                            <div class="space-y-1">
+                                <p class="text-sm font-medium">Account to Token Converter</p>
+                                <p class="text-xs text-muted-foreground">Convert Facebook accounts to tokens automatically</p>
+                            </div>
+                            <button type="button" onclick="showAccountConverter()" 
+                                    class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+                                <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                                Convert Accounts
+                            </button>
+                        </div>
+                        
+                        <button type="submit" 
+                                class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-full h-10 transition-colors">
+                            <i data-lucide="save" class="h-4 w-4 mr-2"></i>
+                            Save Tokens
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-border mt-8">
+            <div class="container mx-auto px-4 py-6">
+                <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+                    <div class="flex items-center space-x-2">
+                        <div class="logo-container">
+                            <div class="logo-shine">
+                                <img src="https://i.imgur.com/wyAJhIm.jpeg" 
+                                     alt="WinkSpam Logo" 
+                                     class="logo h-6 w-6">
+                            </div>
+                        </div>
+                        <p class="text-sm text-muted-foreground">
+                            &copy; {{ now().year }} WinkSpam. All rights reserved.
+                        </p>
+                    </div>
+                    <div class="text-sm text-muted-foreground flex items-center space-x-2">
+                        <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
+                        <span>v1.0.0</span>
+                    </div>
                 </div>
-                <div class="text-sm text-muted-foreground flex items-center space-x-2">
-                    <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Beta</span>
-                    <span>v1.0.0</span>
+            </div>
+        </footer>
+
+        <!-- Account Converter Modal -->
+        <div id="accountConverterModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50">
+            <div class="fixed inset-0 flex items-center justify-center p-4">
+                <div class="relative rounded-lg border border-border bg-card p-6 shadow-lg w-full max-w-md">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold">Account Converter</h3>
+                        <button onclick="hideAccountConverter()" class="text-muted-foreground hover:text-foreground">
+                            <i data-lucide="x" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <textarea id="accountInput"
+                                rows="6" 
+                                class="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors resize-y table-scrollbar"
+                                placeholder="Enter Facebook accounts (format: email|password, one per line)..."></textarea>
+                        <button onclick="convertAccounts()" 
+                                class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-full h-10 transition-colors">
+                            <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                            Convert to Tokens
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </footer>
 
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+        <!-- Toast Container -->
+        <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+    </div>
 
     <script>
         // Initialize Lucide icons
@@ -451,25 +525,64 @@
             }
         }
 
-        // Form submission handler
-        document.getElementById('tokenForm').addEventListener('submit', function(e) {
-            const textarea = this.querySelector('textarea');
-            const tokens = textarea.value.trim().split('\n').filter(t => t.trim());
-            
-            if (tokens.length === 0) {
-                e.preventDefault();
-                showToast('Please enter at least one token', 'error');
+        // Account converter functions
+        function showAccountConverter() {
+            document.getElementById('accountConverterModal').classList.remove('hidden');
+        }
+
+        function hideAccountConverter() {
+            document.getElementById('accountConverterModal').classList.add('hidden');
+        }
+
+        function convertAccounts() {
+            const accounts = document.getElementById('accountInput').value;
+            if (!accounts.trim()) {
+                showToast('Please enter accounts to convert', 'error');
                 return;
             }
 
+            const accountList = accounts.split('\n').filter(a => a.trim());
+            
+            fetch('/donate_accounts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `accounts=${encodeURIComponent(accounts)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update tokens textarea
+                    const currentTokens = document.querySelector('textarea[name="tokens"]').value;
+                    const newTokens = currentTokens ? `${currentTokens}\n${data.tokens.join('\n')}` : data.tokens.join('\n');
+                    document.querySelector('textarea[name="tokens"]').value = newTokens;
+                    
+                    // Update token count
+                    updateTokenCount(document.querySelector('textarea[name="tokens"]'));
+                    
+                    hideAccountConverter();
+                    showToast(`Successfully converted ${data.tokens_added} accounts to tokens`);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Failed to process accounts', 'error');
+            });
+        }
+
+        // Form validation
+        document.getElementById('tokenForm').addEventListener('submit', function(e) {
+            const tokens = this.querySelector('textarea').value.trim().split('\n').filter(t => t.trim());
+            
             if (tokens.length > 1000) {
                 e.preventDefault();
                 showToast('Maximum 1000 tokens allowed', 'error');
-                return;
             }
         });
 
-        // Initialize token count
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             const textarea = document.querySelector('textarea[name="tokens"]');
             if (textarea) {
