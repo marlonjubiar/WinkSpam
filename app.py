@@ -8,11 +8,7 @@ import pytz
 import asyncio
 import aiohttp
 import uuid
-import string
 import random
-import httpx
-from bs4 import BeautifulSoup
-from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
@@ -52,103 +48,6 @@ def initialize_files():
             json.dump({'total_shares': 0, 'successful_shares': 0, 'failed_shares': 0}, f)
 
 initialize_files()
-
-# Token getter functions
-async def get_token_from_credentials(email, password):
-    device_id = str(uuid.uuid4())
-    adid = str(uuid.uuid4())
-    
-    data = {
-        'adid': adid,
-        'format': 'json',
-        'device_id': device_id,
-        'email': email,
-        'password': password,
-        'generate_session_cookies': '1',
-        'credentials_type': 'password',
-        'source': 'login',
-        'error_detail_type': 'button_with_disabled',
-        'meta_inf_fbmeta': '',
-        'advertiser_id': adid,
-        'currently_logged_in_userid': '0',
-        'locale': 'en_US',
-        'client_country_code': 'US',
-        'method': 'auth.login',
-        'fb_api_req_friendly_name': 'authenticate',
-        'fb_api_caller_class': 'com.facebook.account.login.protocol.Fb4aAuthHandler',
-        'access_token': '350685531728|62f8ce9f74b12f84c123cc23437a4a32',
-        'api_key': '882a8490361da98702bf97a021ddc14d'
-    }
-
-    headers = {
-        'User-Agent': '[FBAN/FB4A;FBAV/396.1.0.28.104;FBBV/429650999;FBDM/{density=2.25,width=720,height=1452};FBLC/en_US;FBRV/437165341;FBCR/Carrier;FBMF/OPPO;FBBD/OPPO;FBPN/com.facebook.katana;FBDV/CPH1893;FBSV/10;FBOP/1;FBCA/arm64-v8a:;]',
-        'Accept-Encoding': 'gzip, deflate',
-        'Connection': 'close',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Host': 'b-api.facebook.com',
-        'X-FB-Net-HNI': str(random.randint(20000, 40000)),
-        'X-FB-SIM-HNI': str(random.randint(20000, 40000)),
-        'Authorization': 'OAuth 350685531728|62f8ce9f74b12f84c123cc23437a4a32',
-        'X-FB-Connection-Type': 'WIFI',
-        'X-Tigon-Is-Retry': 'False',
-        'x-fb-session-id': 'nid=jiZ+yNNBgbwC;pid=Main;tid=132;nc=1;fc=0;bc=0;cid=d29d67d37eca387482a8a5b740f84f62',
-        'x-fb-device-group': '5120',
-        'X-FB-Friendly-Name': 'authenticate',
-        'X-FB-Request-Analytics-Tags': 'graphservice',
-        'X-FB-HTTP-Engine': 'Liger',
-        'X-FB-Client-IP': 'True',
-        'X-FB-Server-Cluster': 'True',
-        'x-fb-connection-token': 'd29d67d37eca387482a8a5b740f84f62'
-    }
-
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                'https://b-api.facebook.com/method/auth.login',
-                data=data,
-                headers=headers,
-                timeout=30
-            )
-            result = response.json()
-
-            if 'access_token' in result:
-                return {
-                    'status': 'success',
-                    'access_token': result['access_token'],
-                    'cookies': result.get('session_cookies', [])
-                }
-            else:
-                return {
-                    'status': 'error',
-                    'message': result.get('error_msg', 'Login failed')
-                }
-    except Exception as e:
-        return {
-            'status': 'error',
-            'message': str(e)
-        }
-
-async def validate_and_process_tokens(accounts):
-    valid_tokens = []
-    
-    async def process_account(account):
-        try:
-            email, password = account.split('|')
-            result = await get_token_from_credentials(email.strip(), password.strip())
-            if result['status'] == 'success':
-                return result['access_token']
-            else:
-                logger.error(f"Failed to get token: {result['message']}")
-                return None
-        except Exception as e:
-            logger.error(f"Error processing account: {str(e)}")
-            return None
-
-    tasks = [process_account(account) for account in accounts if '|' in account]
-    results = await asyncio.gather(*tasks)
-    valid_tokens = [token for token in results if token]
-    
-    return valid_tokens
 
 # Stats management
 class ShareStats:
@@ -279,12 +178,33 @@ def generate_key():
 @app.route('/validate_key', methods=['POST'])
 def validate_key():
     key = request.form.get('key')
+    remember = request.form.get('remember', 'false') == 'true'
     key_manager = KeyManager()
     is_valid, message = key_manager.validate_key(key)
     if is_valid:
         session['key'] = key
+        if remember:
+            session.permanent = True
+            app.permanent_session_lifetime = timedelta(days=30)
         return jsonify({'status': 'success', 'message': message})
     return jsonify({'status': 'error', 'message': message})
+
+@app.route('/check_session', methods=['GET'])
+def check_session():
+    if 'key' in session:
+        key_manager = KeyManager()
+        is_valid, message = key_manager.validate_key(session['key'])
+        if is_valid:
+            return jsonify({
+                'status': 'success',
+                'key': session['key']
+            })
+    return jsonify({'status': 'error'})
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('key', None)
+    return jsonify({'status': 'success'})
 
 @app.route('/admin')
 @admin_required
@@ -460,61 +380,6 @@ def share():
     except Exception as e:
         logger.error(f"Share error: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)})
-
-@app.route('/donate_accounts', methods=['POST'])
-async def donate_accounts():
-    try:
-        accounts = request.form.get('accounts', '').split('\n')
-        accounts = [acc.strip() for acc in accounts if acc.strip()]
-        
-        if not accounts:
-            return jsonify({
-                'status': 'error',
-                'message': 'No accounts provided'
-            })
-
-        # Process accounts and get tokens
-        valid_tokens = await validate_and_process_tokens(accounts)
-        
-        if not valid_tokens:
-            return jsonify({
-                'status': 'error',
-                'message': 'No valid tokens generated from the accounts'
-            })
-
-        # Save valid tokens
-        try:
-            with open(TOKEN_FILE, 'r') as f:
-                existing_tokens = [line.strip() for line in f if line.strip()]
-            
-            # Add new tokens
-            all_tokens = existing_tokens + valid_tokens
-            
-            # Write back all tokens
-            with open(TOKEN_FILE, 'w') as f:
-                f.write('\n'.join(all_tokens))
-            
-            return jsonify({
-                'status': 'success',
-                'message': f'Successfully added {len(valid_tokens)} tokens',
-                'tokens_added': len(valid_tokens),
-                'total_tokens': len(all_tokens),
-                'tokens': valid_tokens
-            })
-            
-        except Exception as e:
-            logger.error(f"Error saving tokens: {str(e)}")
-            return jsonify({
-                'status': 'error',
-                'message': 'Failed to save tokens'
-            })
-            
-    except Exception as e:
-        logger.error(f"Account processing error: {str(e)}")
-        return jsonify({
-            'status': 'error',
-            'message': f'Failed to process accounts: {str(e)}'
-        })
 
 @app.route('/get_token_count', methods=['GET'])
 def get_token_count():
