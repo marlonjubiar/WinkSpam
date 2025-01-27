@@ -2,441 +2,414 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinkSpam - Advanced Share Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WinkSpam Pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
     <style>
         :root {
-            --background: 0 0% 3.9%;
-            --foreground: 0 0% 98%;
-            --card: 0 0% 5.9%;
-            --card-foreground: 0 0% 98%;
-            --popover: 0 0% 3.9%;
-            --popover-foreground: 0 0% 98%;
-            --primary: 217.2 91.2% 59.8%;
-            --primary-foreground: 0 0% 98%;
-            --secondary: 0 0% 14.9%;
-            --secondary-foreground: 0 0% 98%;
-            --muted: 0 0% 14.9%;
-            --muted-foreground: 0 0% 63.9%;
-            --accent: 0 0% 14.9%;
-            --accent-foreground: 0 0% 98%;
-            --destructive: 0 62.8% 30.6%;
-            --destructive-foreground: 0 0% 98%;
-            --border: 0 0% 14.9%;
-            --input: 0 0% 14.9%;
-            --ring: 217.2 91.2% 59.8%;
+            --app-bg: #000000;
+            --card-bg: #1c1c1e;
+            --input-bg: #2c2c2e;
+            --border-color: #38383a;
+            --text-primary: #ffffff;
+            --text-secondary: #8e8e93;
+            --accent-blue: #0a84ff;
+            --accent-green: #30d158;
+            --accent-red: #ff453a;
+            --blur-bg: rgba(0, 0, 0, 0.8);
         }
 
-        .hero-gradient {
-            background: linear-gradient(to bottom, hsl(var(--background)), hsl(var(--card)));
+        * {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .logo-container {
+        body {
+            background-color: var(--app-bg);
+            color: var(--text-primary);
+        }
+
+        /* Modern iOS Card Style */
+        .ios-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        /* iOS-style Input */
+        .ios-input {
+            background-color: var(--input-bg);
+            border: none;
+            border-radius: 12px;
+            color: var(--text-primary);
+            padding: 12px 16px;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .ios-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-blue);
+        }
+
+        /* iOS Button Styles */
+        .ios-button {
+            background-color: var(--accent-blue);
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .ios-button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        /* iOS Switch */
+        .ios-switch {
+            width: 51px;
+            height: 31px;
+            background-color: var(--input-bg);
+            border-radius: 31px;
             position: relative;
-            width: 80px;
-            height: 80px;
-            overflow: hidden;
-            border-radius: 50%;
-            background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary)/0.2));
-            padding: 2px;
-            margin: 0 auto;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
 
-        @media (min-width: 640px) {
-            .logo-container {
-                width: 120px;
-                height: 120px;
+        .ios-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 27px;
+            height: 27px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        .ios-switch.active {
+            background-color: var(--accent-green);
+        }
+
+        .ios-switch.active::after {
+            transform: translateX(20px);
+        }
+
+        /* iOS Progress Bar */
+        .ios-progress {
+            height: 6px;
+            background-color: var(--input-bg);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .ios-progress-bar {
+            height: 100%;
+            background-color: var(--accent-blue);
+            transition: width 0.3s ease;
+        }
+
+        /* iOS-style Toast */
+        .ios-toast {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 14px;
+            padding: 12px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
             }
         }
 
-        .nav-logo {
-            width: 32px !important;
-            height: 32px !important;
+        /* iOS-style Modal */
+        .ios-modal {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            max-width: 90%;
+            width: 400px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
         }
 
-        .logo-wrapper {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: hsl(var(--background));
-            padding: 4px;
-            overflow: hidden;
-            position: relative;
+        .modal-backdrop {
+            background-color: var(--blur-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
-        .logo {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            filter: brightness(1.1);
+        /* Stats Container */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
         }
 
-        .logo-shine {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(45deg, transparent, hsla(var(--primary), 0.1), transparent);
-            animation: shine 2s infinite;
+        .stat-card {
+            background-color: var(--input-bg);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
         }
 
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .animate-float {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .feature-card {
-            background: linear-gradient(to bottom right, hsl(var(--card)), hsl(var(--background)));
-            border: 1px solid hsl(var(--border));
-            transition: all 0.3s ease;
-        }
-
-        .feature-icon {
-            background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary)/0.2));
-        }
-
+        /* Responsive Design */
         @media (max-width: 640px) {
-            .container {
-                padding-left: 1rem;
-                padding-right: 1rem;
+            .ios-card {
+                border-radius: 12px;
+                padding: 16px;
+            }
+
+            .ios-button {
+                padding: 10px 16px;
+            }
+
+            .stats-grid {
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 8px;
+            }
+        }
+
+        /* Animation Keyframes */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-secondary);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
             }
         }
     </style>
 </head>
-<body class="bg-background text-foreground font-sans antialiased min-h-screen flex flex-col">
-    <!-- Header -->
-    <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div class="container flex h-14 max-w-screen-2xl items-center justify-between px-4">
-            <a href="/" class="flex items-center gap-2">
-                <div class="logo-container nav-logo">
-                    <div class="logo-wrapper">
-                        <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="logo">
-                        <div class="logo-shine"></div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="font-semibold text-lg hidden sm:inline-block">WinkSpam</span>
-                    <span class="rounded-lg bg-primary/10 px-2 py-1 text-xs font-medium text-primary">Beta</span>
-                </div>
-            </a>
-            
-            <nav class="flex items-center gap-2">
-                <button id="settingsBtn" class="hover:bg-accent hover:text-accent-foreground inline-flex items-center justify-center rounded-md px-2 py-2 text-sm font-medium transition-colors">
-                    <i data-lucide="settings" class="h-4 w-4"></i>
-                    <span class="hidden sm:inline ml-2">Settings</span>
+<body class="min-h-screen flex flex-col">
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-50 backdrop-blur-xl bg-[#000000cc]">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="Logo" class="w-8 h-8 rounded-lg">
+                <span class="text-lg font-semibold">WinkSpam Pro</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="settingsBtn" class="p-2 rounded-full hover:bg-[#ffffff1a] transition-colors">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
                 </button>
-                <a href="/admin" class="hover:bg-accent hover:text-accent-foreground inline-flex items-center justify-center rounded-md px-2 py-2 text-sm font-medium transition-colors">
-                    <i data-lucide="shield" class="h-4 w-4"></i>
-                    <span class="hidden sm:inline ml-2">Admin</span>
-                </a>
-                <button id="logoutBtn" class="hidden hover:bg-destructive/90 bg-destructive text-destructive-foreground inline-flex items-center justify-center rounded-md px-2 py-2 text-sm font-medium transition-colors">
-                    <i data-lucide="log-out" class="h-4 w-4"></i>
-                    <span class="hidden sm:inline ml-2">Logout</span>
+                <button id="logoutBtn" class="hidden p-2 rounded-full hover:bg-[#ff453a1a] text-[#ff453a] transition-colors">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
                 </button>
-            </nav>
+            </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1">
-        <!-- Hero Section -->
-        <section class="hero-gradient border-b border-border/40">
-            <div class="container mx-auto px-4 py-8 sm:py-16">
-                <div class="text-center space-y-4 sm:space-y-6 hero-content">
-                    <div class="logo-container animate-float mb-4 sm:mb-6">
-                        <div class="logo-wrapper">
-                            <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="logo">
-                            <div class="logo-shine"></div>
-                        </div>
-                    </div>
-                    <h1 class="text-3xl sm:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                        WinkSpam Share Tool
-                    </h1>
-                    <p class="text-muted-foreground max-w-[600px] mx-auto text-base sm:text-lg">
-                        Advanced Facebook sharing tool with secure key authentication and real-time progress tracking.
-                    </p>
+    <main class="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
+        <!-- Authentication Section -->
+        <div id="keySection" class="ios-card p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Authentication</h2>
+            <div class="space-y-4">
+                <div>
+                    <input type="text" id="key" placeholder="Enter your access key" 
+                           class="ios-input w-full">
+                </div>
+                <div class="flex items-center justify-between">
+                    <label class="text-[#8e8e93]">Remember Key</label>
+                    <div id="rememberKey" class="ios-switch"></div>
+                </div>
+                <button onclick="validateKey()" class="ios-button w-full text-white">
+                    Validate Key
+                </button>
+                <div class="text-center">
+                    <button onclick="generateKey()" class="text-[#0a84ff] text-sm">
+                        Generate New Key
+                    </button>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- Features Section -->
-        <section class="py-8 sm:py-12 container mx-auto px-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-                <!-- Speed Feature -->
-                <div class="feature-card rounded-lg p-4 sm:p-6">
-                    <div class="feature-icon w-10 sm:w-12 h-10 sm:h-12 rounded-full flex items-center justify-center mb-4">
-                        <i data-lucide="zap" class="h-5 sm:h-6 w-5 sm:w-6 text-primary-foreground"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold mb-2">Lightning Fast</h3>
-                    <p class="text-muted-foreground text-sm sm:text-base">
-                        Process multiple shares simultaneously with our optimized sharing engine.
-                    </p>
+        <!-- Share Section -->
+        <div id="shareSection" class="hidden">
+            <div class="ios-card p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold">Share Configuration</h2>
+                    <span id="planBadge" class="px-3 py-1 rounded-full text-xs font-medium bg-[#0a84ff1a] text-[#0a84ff]">
+                        Free Plan
+                    </span>
                 </div>
-
-                <!-- Security Feature -->
-                <div class="feature-card rounded-lg p-4 sm:p-6">
-                    <div class="feature-icon w-10 sm:w-12 h-10 sm:h-12 rounded-full flex items-center justify-center mb-4">
-                        <i data-lucide="shield-check" class="h-5 sm:h-6 w-5 sm:w-6 text-primary-foreground"></i>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm text-[#8e8e93] mb-2 block">Post ID</label>
+                        <input type="text" id="postId" placeholder="Enter Facebook Post ID" 
+                               class="ios-input w-full">
                     </div>
-                    <h3 class="text-lg font-semibold mb-2">Secure Access</h3>
-                    <p class="text-muted-foreground text-sm sm:text-base">
-                        Protected by key authentication system with role-based access control.
-                    </p>
-                </div>
-
-                <!-- Analytics Feature -->
-                <div class="feature-card rounded-lg p-4 sm:p-6">
-                    <div class="feature-icon w-10 sm:w-12 h-10 sm:h-12 rounded-full flex items-center justify-center mb-4">
-                        <i data-lucide="activity" class="h-5 sm:h-6 w-5 sm:w-6 text-primary-foreground"></i>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-sm text-[#8e8e93]">Share Count</label>
+                            <span id="maxSharesLabel" class="text-xs text-[#8e8e93]">Available: 0</span>
+                        </div>
+                        <input type="number" id="shareCount" placeholder="1-1000" min="1" max="1000"
+                               class="ios-input w-full">
                     </div>
-                    <h3 class="text-lg font-semibold mb-2">Real-time Tracking</h3>
-                    <p class="text-muted-foreground text-sm sm:text-base">
-                        Monitor share progress and performance in real-time with detailed analytics.
-                    </p>
+
+                    <!-- Progress Bar -->
+                    <div id="progressBar" class="hidden space-y-2">
+                        <div class="ios-progress">
+                            <div class="ios-progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-[#8e8e93]">
+                            <span id="progressText">0%</span>
+                            <span id="progressCount">0/0</span>
+                        </div>
+                    </div>
+
+                    <button onclick="startShare()" class="ios-button w-full text-white">
+                        Start Share Process
+                    </button>
+
+                    <!-- Stats Grid -->
+                    <div id="shareStats" class="hidden stats-grid mt-4">
+                        <div class="stat-card">
+                            <div class="text-xs text-[#8e8e93] mb-1">Success</div>
+                            <div id="successCount" class="text-lg font-semibold text-[#30d158]">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="text-xs text-[#8e8e93] mb-1">Failed</div>
+                            <div id="failedCount" class="text-lg font-semibold text-[#ff453a]">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="text-xs text-[#8e8e93] mb-1">Remaining</div>
+                            <div id="remainingCount" class="text-lg font-semibold">0</div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Main Interface -->
-            <div class="max-w-lg mx-auto space-y-4 sm:space-y-6">
-                <!-- Key Section -->
-                <div id="keySection" class="rounded-lg border border-border bg-card p-4 sm:p-6 shadow-lg fade-in">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="key" class="h-5 w-5 text-primary"></i>
-                                <h2 class="text-lg font-semibold">Authentication</h2>
-                            </div>
-                            <span class="text-xs text-muted-foreground">Secure Access</span>
-                        </div>
-                        
-                        <div class="space-y-4">
-                            <div class="relative">
-                                <input type="text" id="key" placeholder="Enter your access key" 
-                                       class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <i data-lucide="lock" class="h-4 w-4 text-muted-foreground"></i>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="rememberKey" class="h-4 w-4 rounded border-input bg-background">
-                                <label for="rememberKey" class="text-sm text-muted-foreground">Remember my key</label>
-                            </div>
-
-                            <button onclick="validateKey()" 
-                                    class="inline-flex items-center justify-center w-full rounded-md text-sm font-medium transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-                                <i data-lucide="unlock" class="h-4 w-4 mr-2"></i>
-                                Validate Key
-                            </button>
-
-                            <div class="flex justify-center items-center gap-2 text-sm">
-                                <span class="text-muted-foreground">Don't have a key?</span>
-                                <button onclick="generateKey()" 
-                                        class="inline-flex items-center text-primary hover:text-primary/80 transition-colors">
-                                    <i data-lucide="plus-circle" class="h-4 w-4 mr-1"></i>
-                                    Generate new key
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Share Section -->
-                <div id="shareSection" class="hidden rounded-lg border border-border bg-card p-4 sm:p-6 shadow-lg fade-in">
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="share-2" class="h-5 w-5 text-primary"></i>
-                                <h2 class="text-lg font-semibold">Share Configuration</h2>
-                            </div>
-                            <div id="planBadge" class="inline-flex items-center rounded-full bg-primary/10 px-2 sm:px-3 py-1 text-xs font-medium text-primary">
-                                Free Plan
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-4">
-                            <!-- Post ID Input -->
-                            <div class="space-y-2">
-                                <label class="text-sm font-medium flex items-center gap-2">
-                                    <span>Post ID</span>
-                                    <button class="text-muted-foreground hover:text-foreground" 
-                                            onclick="showPostIdHelp()">
-                                        <i data-lucide="help-circle" class="h-4 w-4"></i>
-                                    </button>
-                                </label>
-                                <div class="relative">
-                                    <input type="text" id="postId" placeholder="Enter Facebook Post ID" 
-                                           class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <i data-lucide="link" class="h-4 w-4 text-muted-foreground"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Share Count Input -->
-                            <div class="space-y-2">
-                                <div class="flex justify-between items-center">
-                                    <label class="text-sm font-medium">Share Count</label>
-                                    <span id="maxSharesLabel" class="text-xs text-muted-foreground">Available: 0</span>
-                                </div>
-                                <div class="relative">
-                                    <input type="number" id="shareCount" placeholder="1-1000" min="1" max="1000"
-                                           class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <i data-lucide="hash" class="h-4 w-4 text-muted-foreground"></i>
-                                    </div>
-                                </div>
-                                <div id="shareLimitInfo" class="text-xs text-muted-foreground flex items-center gap-1">
-                                    <i data-lucide="info" class="h-3 w-3"></i>
-                                    <span>Share count will adjust to available tokens</span>
-                                </div>
-                            </div>
-
-                            <!-- Share Button -->
-                            <button onclick="startShare()" 
-                                    class="inline-flex items-center justify-center w-full rounded-md text-sm font-medium transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-                                <i data-lucide="play" class="h-4 w-4 mr-2"></i>
-                                Start Share Process
-                            </button>
-
-                            <!-- Progress Section -->
-                            <div id="progressSection" class="hidden space-y-4">
-                                <div class="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                                    <div id="progressBar" class="h-full bg-primary transition-all duration-300" style="width: 0%"></div>
-                                </div>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <div class="bg-card border border-border rounded-md p-2 text-center">
-                                        <div class="text-xs text-muted-foreground">Success</div>
-                                        <div id="successCount" class="text-lg font-semibold text-green-500">0</div>
-                                    </div>
-                                    <div class="bg-card border border-border rounded-md p-2 text-center">
-                                        <div class="text-xs text-muted-foreground">Failed</div>
-                                        <div id="failedCount" class="text-lg font-semibold text-red-500">0</div>
-                                    </div>
-                                    <div class="bg-card border border-border rounded-md p-2 text-center">
-                                        <div class="text-xs text-muted-foreground">Remaining</div>
-                                        <div id="remainingCount" class="text-lg font-semibold">0</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Status Section -->
-                <div id="status" class="hidden"></div>
-            </div>
-        </section>
+        <!-- Status Section -->
+        <div id="status" class="hidden"></div>
     </main>
 
     <!-- Settings Modal -->
-    <div id="settingsModal" class="hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
-        <div class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-4 sm:p-6 shadow-lg duration-200 rounded-lg mx-4">
-            <div class="flex flex-col space-y-1.5 text-center sm:text-left">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-semibold leading-none tracking-tight">Settings</h2>
-                    <button onclick="closeSettings()" class="text-muted-foreground hover:text-foreground">
-                        <i data-lucide="x" class="h-4 w-4"></i>
-                    </button>
-                </div>
-                <p class="text-sm text-muted-foreground">View your plan details and usage statistics</p>
+    <div id="settingsModal" class="hidden fixed inset-0 modal-backdrop">
+        <div class="ios-modal p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold">Settings</h3>
+                <button onclick="closeSettings()" class="text-[#8e8e93] hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
-
-            <div class="grid gap-4">
-                <!-- Plan Information -->
-                <div class="rounded-lg border p-4 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-sm font-medium">Your Plan</h3>
-                        <span id="planType" class="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                            Free Plan
-                        </span>
-                    </div>
+            <div class="space-y-6">
+                <!-- Plan Info -->
+                <div class="ios-card p-4">
+                    <h4 class="text-sm font-medium text-[#8e8e93] mb-3">Your Plan</h4>
                     <div class="space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted-foreground">Share Limit</span>
+                        <div class="flex justify-between">
+                            <span class="text-[#8e8e93]">Type</span>
+                            <span id="planType" class="font-medium">Free Plan</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-[#8e8e93]">Share Limit</span>
                             <span id="shareLimit" class="font-medium">250 per request</span>
                         </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted-foreground">Cooldown</span>
+                        <div class="flex justify-between">
+                            <span class="text-[#8e8e93]">Cooldown</span>
                             <span id="planCooldown" class="font-medium">60 seconds</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Usage Statistics -->
-                <div class="rounded-lg border p-4 space-y-3">
-                    <h3 class="text-sm font-medium">Usage Statistics</h3>
+                <!-- Usage Stats -->
+                <div class="ios-card p-4">
+                    <h4 class="text-sm font-medium text-[#8e8e93] mb-3">Usage Statistics</h4>
                     <div class="space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted-foreground">Total Shares</span>
+                        <div class="flex justify-between">
+                            <span class="text-[#8e8e93]">Total Shares</span>
                             <span id="totalShares" class="font-medium">0</span>
                         </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted-foreground">Last Used</span>
+                        <div class="flex justify-between">
+                            <span class="text-[#8e8e93]">Last Used</span>
                             <span id="lastUsed" class="font-medium">Never</span>
                         </div>
                     </div>
+                </div>
+
+                <!-- Support -->
+                <div class="ios-card p-4">
+                  <!-- Support Section (continued) -->
+                    <h4 class="text-sm font-medium text-[#8e8e93] mb-3">Support</h4>
+                    <a href="https://t.me/yourhandle" target="_blank" 
+                       class="ios-button w-full flex items-center justify-center gap-2 text-white">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        Contact Support
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Help Modal -->
-    <div id="helpModal" class="hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
-        <div class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-4 sm:p-6 shadow-lg duration-200 rounded-lg mx-4">
-            <div class="flex justify-between items-center">
-                <h3 class="text-lg font-semibold">How to Find Post ID</h3>
-                <button onclick="closeHelp()" class="text-muted-foreground hover:text-foreground">
-                    <i data-lucide="x" class="h-4 w-4"></i>
+    <div id="helpModal" class="hidden fixed inset-0 modal-backdrop">
+        <div class="ios-modal p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold">How to Find Post ID</h3>
+                <button onclick="closeHelp()" class="text-[#8e8e93] hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
             <div class="space-y-4">
-                <p class="text-sm text-muted-foreground">To find a Facebook post ID:</p>
-                <ol class="list-decimal list-inside space-y-2 text-sm">
+                <p class="text-[#8e8e93]">To find a Facebook post ID:</p>
+                <ol class="space-y-3 list-decimal list-inside text-[#8e8e93]">
                     <li>Open the post you want to share</li>
                     <li>Look at the URL in your browser</li>
-                    <li>Find the long number after "/posts/" or in the URL</li>
+                    <li>Find the long number after "/posts/"</li>
                     <li>That number is your Post ID</li>
                 </ol>
-                <div class="rounded-md bg-secondary/50 p-3 text-sm">
-                    <p class="text-muted-foreground">Example URL:</p>
-                    <code class="text-primary">https://facebook.com/username/posts/123456789</code>
-                    <p class="text-muted-foreground mt-2">Post ID would be: <span class="text-primary">123456789</span></p>
+                <div class="ios-card p-4 mt-4">
+                    <p class="text-[#8e8e93] mb-2">Example URL:</p>
+                    <code class="text-[#0a84ff] text-sm break-all">https://facebook.com/username/posts/123456789</code>
+                    <p class="text-[#8e8e93] mt-2">Post ID would be: <span class="text-[#0a84ff]">123456789</span></p>
                 </div>
             </div>
         </div>
@@ -449,24 +422,105 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
+        // Global variables
         let shareInProgress = false;
+        let currentCooldown = 0;
 
+        // UI Helper Functions
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
-            toast.className = `flex items-center gap-2 rounded-lg border border-border bg-card p-4 shadow-lg 
-                ${type === 'success' ? 'text-green-500' : 'text-destructive'}`;
+            toast.className = `ios-toast flex items-center gap-2 max-w-sm`;
+            
+            const icon = type === 'success' ? 'check-circle' : 'alert-circle';
+            const color = type === 'success' ? '#30d158' : '#ff453a';
+            
             toast.innerHTML = `
-                <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="h-5 w-5"></i>
+                <i data-lucide="${icon}" class="w-5 h-5" style="color: ${color}"></i>
                 <span class="text-sm">${message}</span>
             `;
             
-            const container = document.getElementById('toast-container');
-            container.appendChild(toast);
+            document.getElementById('toast-container').appendChild(toast);
             lucide.createIcons();
 
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
+        function showStatus(message, isError = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `ios-card p-6 mb-6 ${isError ? 'border-[#ff453a]' : ''}`;
+            statusEl.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" 
+                       class="w-5 h-5" style="color: ${isError ? '#ff453a' : '#30d158'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            statusEl.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function updateProgress(completed, total) {
+            const percentage = Math.floor((completed / total) * 100);
+            document.querySelector('.ios-progress-bar').style.width = `${percentage}%`;
+            document.getElementById('progressText').textContent = `${percentage}%`;
+            document.getElementById('progressCount').textContent = `${completed}/${total}`;
+            
+            // Update stats
+            document.getElementById('successCount').textContent = completed;
+            document.getElementById('failedCount').textContent = total - completed;
+            document.getElementById('remainingCount').textContent = total - completed;
+        }
+
+        // Key Management
+        function validateKey() {
+            const key = document.getElementById('key').value;
+            const remember = document.getElementById('rememberKey').classList.contains('active');
+
+            if (!key) {
+                showToast('Please enter a key', 'error');
+                return;
+            }
+
+            $.post('/validate_key', { 
+                key: key,
+                remember: remember 
+            }, function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('keySection').style.display = 'none';
+                    document.getElementById('shareSection').classList.remove('hidden');
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    
+                    updatePlanInfo(response.key_info);
+                    showToast('Key validated successfully');
+                    updateTokenCount();
+                } else {
+                    showToast(response.message, 'error');
+                }
+            });
+        }
+
+        function generateKey() {
+            $.post('/generate_key', function(response) {
+                showStatus(`
+                    <div class="space-y-4">
+                        <div class="ios-card p-4">
+                            <p class="text-[#8e8e93] mb-2">Your new key:</p>
+                            <code class="text-[#0a84ff] break-all">${response.key}</code>
+                        </div>
+                        <div class="flex items-center gap-2 text-[#ff9f0a]">
+                            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                            <span>Key requires admin approval before use</span>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        // Share Management
         async function startShare() {
             if (shareInProgress) return;
 
@@ -485,102 +539,41 @@
             }
 
             shareInProgress = true;
-            document.getElementById('shareSection').classList.add('opacity-50', 'pointer-events-none');
-            document.getElementById('progressSection').classList.remove('hidden');
+            document.getElementById('progressBar').classList.remove('hidden');
+            document.getElementById('shareStats').classList.remove('hidden');
 
-            let remainingShares = shareCount;
-            let totalSuccess = 0;
-            let failedAttempts = 0;
-
-            while (remainingShares > 0) {
+            let completedShares = 0;
+            
+            while (completedShares < shareCount) {
                 try {
                     const response = await $.post('/share', {
                         post_id: postId,
-                        share_count: remainingShares
+                        share_count: shareCount - completedShares
                     });
 
                     if (response.status === 'success') {
-                        totalSuccess += response.success_count;
-                        remainingShares -= response.success_count;
+                        completedShares += response.success_count;
+                        updateProgress(completedShares, shareCount);
                         
-                        updateProgress(totalSuccess, failedAttempts, remainingShares, shareCount);
-                        
-                        if (response.available_tokens === 0) {
-                            showToast('No more tokens available', 'error');
-                            break;
+                        if (response.key_info) {
+                            updatePlanInfo(response.key_info);
                         }
                     } else {
-                        failedAttempts++;
                         showToast(response.message, 'error');
                         break;
                     }
                 } catch (error) {
-                    failedAttempts++;
-                    showToast('An error occurred while sharing', 'error');
+                    showToast('An error occurred', 'error');
                     break;
                 }
             }
 
             shareInProgress = false;
-            document.getElementById('shareSection').classList.remove('opacity-50', 'pointer-events-none');
-            
-            if (totalSuccess > 0) {
-                showToast(`Successfully completed ${totalSuccess} shares!`, 'success');
-            }
         }
 
-        function updateProgress(success, failed, remaining, total) {
-            const percentage = Math.floor(((success + failed) / total) * 100);
-            document.getElementById('progressBar').style.width = `${percentage}%`;
-            document.getElementById('successCount').textContent = success;
-            document.getElementById('failedCount').textContent = failed;
-            document.getElementById('remainingCount').textContent = remaining;
-        }
-
-        function validateKey() {
-            const key = document.getElementById('key').value;
-            const remember = document.getElementById('rememberKey').checked;
-
-            if (!key) {
-                showToast('Please enter a key', 'error');
-                return;
-            }
-
-            $.post('/validate_key', { 
-                key: key,
-                remember: remember 
-            })
-            .done(function(response) {
-                if (response.status === 'success') {
-                    document.getElementById('keySection').style.display = 'none';
-                    document.getElementById('shareSection').style.display = 'block';
-                    document.getElementById('logoutBtn').classList.remove('hidden');
-                    updatePlanInfo(response.key_info);
-                    showToast('Key validated successfully');
-                    updateTokenCount();
-                } else {
-                    showToast(response.message, 'error');
-                }
-            })
-            .fail(function() {
-                showToast('An error occurred while validating key', 'error');
-            });
-        }
-
-        function generateKey() {
-            $.post('/generate_key')
-            .done(function(response) {
-                showToast('Key generated successfully');
-                document.getElementById('key').value = response.key;
-            })
-            .fail(function() {
-                showToast('Failed to generate key', 'error');
-            });
-        }
-
+        // Token Management
         function updateTokenCount() {
-            $.get('/get_token_count')
-            .done(function(response) {
+            $.get('/get_token_count', function(response) {
                 if (response.status === 'success') {
                     const count = response.count;
                     document.getElementById('maxSharesLabel').textContent = `Available: ${count}`;
@@ -589,129 +582,33 @@
             });
         }
 
-        function updatePlanInfo(keyInfo) {
-            if (!keyInfo) return;
-
-            const planBadge = document.getElementById('planBadge');
-            const planType = document.getElementById('planType');
-            const shareLimit = document.getElementById('shareLimit');
-            const planCooldown = document.getElementById('planCooldown');
-            const totalShares = document.getElementById('totalShares');
-            const lastUsed = document.getElementById('lastUsed');
-            const shareLimitInfo = document.getElementById('shareLimitInfo');
-
-            planBadge.textContent = keyInfo.role_name;
-            planType.textContent = keyInfo.role_name;
-            shareLimit.textContent = keyInfo.share_limit === "Unlimited" ? "Unlimited" : `${keyInfo.share_limit} per request`;
-            planCooldown.textContent = keyInfo.cooldown > 0 ? `${keyInfo.cooldown} seconds` : 'None';
-            totalShares.textContent = keyInfo.shares_completed;
-            lastUsed.textContent = keyInfo.last_used || 'Never';
-
-            if (keyInfo.role === 'premium') {
-                planBadge.className = 'inline-flex items-center rounded-full bg-yellow-500/10 px-3 py-1 text-xs font-medium text-yellow-500';
-                planType.className = 'inline-flex items-center rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-500';
-                shareLimitInfo.innerHTML = `
-                    <i data-lucide="infinity" class="h-3 w-3"></i>
-                    <span>Unlimited shares with no cooldown</span>
-                `;
-            } else {
-                shareLimitInfo.innerHTML = `
-                    <i data-lucide="info" class="h-3 w-3"></i>
-                    <span>Limited to ${keyInfo.share_limit} shares per request (${keyInfo.cooldown}s cooldown)</span>
-                `;
-            }
-            lucide.createIcons();
-        }
-
-        function showSettings() {
-            document.getElementById('settingsModal').classList.remove('hidden');
-            $.get('/get_key_info', function(response) {
-                if (response.status === 'success') {
-                    updatePlanInfo(response.key_info);
-                }
-            });
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.add('hidden');
-        }
-
-        function showPostIdHelp() {
-            document.getElementById('helpModal').classList.remove('hidden');
-        }
-
-        function closeHelp() {
-            document.getElementById('helpModal').classList.add('hidden');
-        }
-
-        function logout() {
-            $.post('/logout')
-            .done(function(response) {
-                if (response.status === 'success') {
-                    document.getElementById('keySection').style.display = 'block';
-                    document.getElementById('shareSection').style.display = 'none';
-                    document.getElementById('logoutBtn').classList.add('hidden');
-                    document.getElementById('key').value = '';
-                    document.getElementById('rememberKey').checked = false;
-                    showToast('Logged out successfully');
-                }
-            });
-        }
-
-        // Initialize page
+        // Event Listeners
         document.addEventListener('DOMContentLoaded', function() {
+            // Check session
             $.get('/check_session', function(response) {
                 if (response.status === 'success') {
                     document.getElementById('key').value = response.key;
                     document.getElementById('keySection').style.display = 'none';
-                    document.getElementById('shareSection').style.display = 'block';
+                    document.getElementById('shareSection').classList.remove('hidden');
                     document.getElementById('logoutBtn').classList.remove('hidden');
+                    
                     updatePlanInfo(response.key_info);
                     updateTokenCount();
                 }
             });
 
-            // Add event listeners
+            // iOS Switch functionality
+            document.getElementById('rememberKey').addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+
+            // Modal handlers
             document.getElementById('settingsBtn').addEventListener('click', showSettings);
             document.getElementById('logoutBtn').addEventListener('click', logout);
-            
-            // Modal click handlers
-            document.getElementById('settingsModal').addEventListener('click', function(e) {
-                if (e.target === this) closeSettings();
-            });
-            
-            document.getElementById('helpModal').addEventListener('click', function(e) {
-                if (e.target === this) closeHelp();
-            });
-
-            // Key press handlers
-            document.getElementById('key').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') validateKey();
-            });
-
-            document.getElementById('postId').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && document.getElementById('shareCount').value) {
-                    startShare();
-                }
-            });
-
-            document.getElementById('shareCount').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && document.getElementById('postId').value) {
-                    startShare();
-                }
-            });
-
-            // Initialize icons
-            lucide.createIcons();
         });
 
-        // Keyboard handlers
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeSettings();
-                closeHelp();
-            }
-        });
+        // Initialize
+        lucide.createIcons();
     </script>
 </body>
 </html>
