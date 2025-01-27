@@ -2,280 +2,139 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinkSpam Admin Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Login - WinkSpam Pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        border: "hsl(var(--border))",
-                        input: "hsl(var(--input))",
-                        ring: "hsl(var(--ring))",
-                        background: "hsl(var(--background))",
-                        foreground: "hsl(var(--foreground))",
-                        primary: {
-                            DEFAULT: "hsl(var(--primary))",
-                            foreground: "hsl(var(--primary-foreground))",
-                        },
-                        secondary: {
-                            DEFAULT: "hsl(var(--secondary))",
-                            foreground: "hsl(var(--secondary-foreground))",
-                        },
-                        destructive: {
-                            DEFAULT: "hsl(var(--destructive))",
-                            foreground: "hsl(var(--destructive-foreground))",
-                        },
-                        muted: {
-                            DEFAULT: "hsl(var(--muted))",
-                            foreground: "hsl(var(--muted-foreground))",
-                        },
-                        accent: {
-                            DEFAULT: "hsl(var(--accent))",
-                            foreground: "hsl(var(--accent-foreground))",
-                        },
-                        card: {
-                            DEFAULT: "hsl(var(--card))",
-                            foreground: "hsl(var(--card-foreground))",
-                        },
-                    },
-                }
-            }
-        }
-    </script>
     <style>
         :root {
-            --background: 0 0% 3.9%;
-            --foreground: 0 0% 98%;
-            --card: 0 0% 5.9%;
-            --card-foreground: 0 0% 98%;
-            --popover: 0 0% 3.9%;
-            --popover-foreground: 0 0% 98%;
-            --primary: 217.2 91.2% 59.8%;
-            --primary-foreground: 0 0% 98%;
-            --secondary: 0 0% 14.9%;
-            --secondary-foreground: 0 0% 98%;
-            --muted: 0 0% 14.9%;
-            --muted-foreground: 0 0% 63.9%;
-            --accent: 0 0% 14.9%;
-            --accent-foreground: 0 0% 98%;
-            --destructive: 0 62.8% 30.6%;
-            --destructive-foreground: 0 0% 98%;
-            --border: 0 0% 14.9%;
-            --input: 0 0% 14.9%;
-            --ring: 217.2 91.2% 59.8%;
+            --app-bg: #000000;
+            --card-bg: #1c1c1e;
+            --input-bg: #2c2c2e;
+            --border-color: #38383a;
+            --text-primary: #ffffff;
+            --text-secondary: #8e8e93;
+            --accent-blue: #0a84ff;
+            --accent-red: #ff453a;
         }
 
-        .logo-container {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            overflow: hidden;
-            border-radius: 50%;
-            background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--primary)/0.2));
-            padding: 2px;
+        * {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .logo-inner {
+        body {
+            background-color: var(--app-bg);
+            color: var(--text-primary);
+        }
+
+        .ios-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .ios-input {
+            background-color: var(--input-bg);
+            border: none;
+            border-radius: 12px;
+            color: var(--text-primary);
+            padding: 12px 16px;
+            font-size: 16px;
+            transition: all 0.2s;
             width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: hsl(var(--background));
-            padding: 4px;
+        }
+
+        .ios-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-blue);
+        }
+
+        .ios-button {
+            background-color: var(--accent-blue);
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 600;
+            transition: all 0.2s;
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
         }
 
-        .logo {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
+        .ios-button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
         }
 
-        .logo-shine {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-                45deg,
-                transparent,
-                hsla(var(--primary), 0.1),
-                transparent
-            );
-            animation: shine 2s infinite;
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
+        .error-message {
+            background-color: var(--input-bg);
+            border-left: 4px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
     </style>
 </head>
-<body class="bg-background text-foreground font-sans antialiased">
-    <div class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="container mx-auto px-4 py-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <div class="logo-container h-9 w-9">
-                            <div class="logo-inner">
-                                <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="logo">
-                                <div class="logo-shine"></div>
-                            </div>
-                        </div>
-                        <span class="text-lg font-semibold">WinkSpam</span>
-                        <span class="rounded-lg bg-primary/10 px-2 py-1 text-xs font-medium text-primary">Beta</span>
-                    </div>
-                </div>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 backdrop-blur-xl bg-[#000000cc] border-b border-[#38383a]">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="Logo" class="w-8 h-8 rounded-lg">
+                <span class="text-lg font-semibold">WinkSpam Pro Admin</span>
             </div>
-        </header>
+            <a href="/" class="text-[#8e8e93] hover:text-white transition-colors">
+                <i data-lucide="home" class="w-5 h-5"></i>
+            </a>
+        </div>
+    </header>
 
-        <!-- Main Content -->
-        <main class="flex-1 flex items-center justify-center p-4">
-            <div class="w-full max-w-[400px] space-y-6">
-                <!-- Login Card -->
-                <div class="rounded-lg border border-border bg-card p-8 shadow-lg fade-in">
-                    <!-- Logo and Title -->
-                    <div class="flex flex-col items-center space-y-4 mb-8">
-                        <div class="logo-container">
-                            <div class="logo-inner">
-                                <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="logo">
-                                <div class="logo-shine"></div>
-                            </div>
+    <!-- Main Content -->
+    <main class="flex-1 flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <div class="ios-card p-6">
+                <div class="text-center mb-8">
+                    <h1 class="text-2xl font-bold mb-2">Admin Access</h1>
+                    <p class="text-[#8e8e93]">Please enter your admin password to continue</p>
+                </div>
+
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="error-message mb-6">
+                            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                            {{ messages[0] }}
                         </div>
-                        <div class="text-center space-y-1">
-                            <h1 class="text-2xl font-bold tracking-tight">Admin Access</h1>
-                            <p class="text-sm text-muted-foreground">Enter your credentials to access the panel</p>
-                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" class="space-y-6">
+                    <div>
+                        <input type="password" name="password" 
+                               class="ios-input" 
+                               placeholder="Enter admin password"
+                               required>
                     </div>
-
-                    <!-- Flash Messages -->
-                    {% with messages = get_flashed_messages() %}
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="mb-6 flex items-center space-x-2 rounded-lg bg-destructive/10 p-4 text-sm text-destructive fade-in">
-                                    <i data-lucide="alert-circle" class="h-4 w-4 flex-shrink-0"></i>
-                                    <span>{{ message }}</span>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-
-                    <!-- Login Form -->
-                    <form method="POST" class="space-y-6">
-                        <div class="space-y-2">
-                            <label for="password" class="text-sm font-medium">
-                                Password
-                            </label>
-                            <div class="relative">
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    required
-                                    class="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 pr-10 transition-colors"
-                                    placeholder="Enter admin password"
-                                >
-                                <button type="button" onclick="togglePassword()" 
-                                        class="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors">
-                                    <i data-lucide="eye" class="h-4 w-4" id="toggleIcon"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <button type="submit" 
-                                class="w-full inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground h-10 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                            <i data-lucide="log-in" class="h-4 w-4 mr-2"></i>
-                            Sign in
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Back to Home Link -->
-                <div class="text-center fade-in">
-                    <a href="/" class="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
-                        <i data-lucide="arrow-left" class="h-4 w-4 mr-2"></i>
-                        Back to Home
-                    </a>
-                </div>
+                    <button type="submit" class="ios-button text-white">
+                        <i data-lucide="log-in" class="w-5 h-5"></i>
+                        Login to Admin Panel
+                    </button>
+                </form>
             </div>
-        </main>
-
-        <!-- Footer -->
-        <footer class="border-t border-border mt-auto">
-            <div class="container mx-auto px-4 py-6">
-                <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
-                    <div class="flex items-center space-x-2">
-                        <div class="logo-container h-6 w-6">
-                            <div class="logo-inner">
-                                <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="logo">
-                                <div class="logo-shine"></div>
-                            </div>
-                        </div>
-                        <p class="text-sm text-muted-foreground">
-                            &copy; {{ now().year }} WinkSpam. All rights reserved.
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="rounded-lg bg-primary/10 px-2 py-1 text-xs font-medium text-primary">Beta</span>
-                        <span class="text-sm text-muted-foreground">v1.0.0</span>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    </div>
+        </div>
+    </main>
 
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
-
-        // Password visibility toggle
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('toggleIcon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.setAttribute('data-lucide', 'eye-off');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.setAttribute('data-lucide', 'eye');
-            }
-            lucide.createIcons();
-        }
-
-        // Focus password input on load
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('password').focus();
-        });
-
-        // Enter key handler
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.form.submit();
-            }
-        });
     </script>
 </body>
 </html>
