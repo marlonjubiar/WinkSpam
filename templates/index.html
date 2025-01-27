@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinkSpam - Maintenance Mode</title>
+    <title>WinkSpam - Advanced Share Tool</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
@@ -31,6 +32,22 @@
                             DEFAULT: "hsl(var(--secondary))",
                             foreground: "hsl(var(--secondary-foreground))",
                         },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
                     },
                 }
             }
@@ -42,13 +59,29 @@
             --foreground: 0 0% 98%;
             --card: 0 0% 5.9%;
             --card-foreground: 0 0% 98%;
+            --popover: 0 0% 3.9%;
+            --popover-foreground: 0 0% 98%;
             --primary: 217.2 91.2% 59.8%;
             --primary-foreground: 0 0% 98%;
             --secondary: 0 0% 14.9%;
             --secondary-foreground: 0 0% 98%;
+            --muted: 0 0% 14.9%;
+            --muted-foreground: 0 0% 63.9%;
+            --accent: 0 0% 14.9%;
+            --accent-foreground: 0 0% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 0 0% 98%;
             --border: 0 0% 14.9%;
             --input: 0 0% 14.9%;
             --ring: 217.2 91.2% 59.8%;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(
+                to bottom,
+                hsl(var(--background)),
+                hsl(var(--card))
+            );
         }
 
         .logo-container {
@@ -78,6 +111,7 @@
             border-radius: 50%;
             object-fit: cover;
             filter: brightness(1.1);
+            transition: transform 0.3s ease;
         }
 
         .logo-shine {
@@ -92,6 +126,11 @@
             animation: shine 2s infinite;
         }
 
+        .nav-logo {
+            width: 40px;
+            height: 40px;
+        }
+
         @keyframes shine {
             0% { transform: translateX(-100%) rotate(45deg); }
             100% { transform: translateX(100%) rotate(45deg); }
@@ -102,115 +141,722 @@
             50% { transform: translateY(-10px); }
         }
 
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         .animate-float {
             animation: float 3s ease-in-out infinite;
         }
 
-        .bg-gradient {
-            background: radial-gradient(
-                circle at center,
-                hsl(var(--background)),
-                hsl(var(--card))
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .feature-card {
+            background: linear-gradient(
+                to bottom right,
+                hsl(var(--card)),
+                hsl(var(--background))
             );
+            border: 1px solid hsl(var(--border));
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            border-color: hsl(var(--primary)/0.5);
+        }
+
+        .feature-icon {
+            background: linear-gradient(
+                45deg,
+                hsl(var(--primary)),
+                hsl(var(--primary)/0.2)
+            );
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 640px) {
+            .logo-container {
+                width: 80px;
+                height: 80px;
+            }
+
+            .hero-content {
+                padding: 2rem 1rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
-<body class="bg-gradient text-foreground font-sans antialiased min-h-screen flex flex-col">
-    <main class="flex-1 flex items-center justify-center p-4">
-        <div class="w-full max-w-xl mx-auto text-center space-y-8">
-            <!-- Logo -->
-            <div class="logo-container animate-float">
-                <div class="logo-wrapper">
-                    <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="logo">
-                    <div class="logo-shine"></div>
-                </div>
-            </div>
-
-            <!-- Content -->
-            <div class="space-y-4">
-                <h1 class="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                    Under Maintenance
-                </h1>
-                <p class="text-xl text-muted-foreground">
-                    We're currently updating our token system
-                </p>
-            </div>
-
-            <!-- Status Card -->
-            <div class="rounded-lg border border-border bg-card p-6 shadow-lg space-y-4">
-                <div class="flex items-center justify-center gap-2 text-primary">
-                    <i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i>
-                    <span class="font-medium">System Maintenance in Progress</span>
-                </div>
-                <p class="text-muted-foreground">
-                    We're working on improving our service. The system will be back online shortly.
-                </p>
-                <div class="flex items-center justify-center gap-4 pt-2">
-                    <span class="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <i data-lucide="clock" class="h-4 w-4"></i>
-                        Estimated Time: 1-2 hours
-                    </span>
-                    <span class="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <i data-lucide="database" class="h-4 w-4"></i>
-                        Token System Update
-                    </span>
-                </div>
-            </div>
-
-            <!-- Updates Section -->
-            <div class="space-y-4">
-                <h2 class="text-lg font-semibold">Latest Updates</h2>
-                <div class="grid gap-3 text-sm">
-                    <div class="rounded-md bg-secondary/50 p-3 text-left">
-                        <div class="flex items-center gap-2 text-primary mb-1">
-                            <i data-lucide="refresh-cw" class="h-4 w-4"></i>
-                            <span class="font-medium">System Update</span>
-                        </div>
-                        <p class="text-muted-foreground">
-                            Performing essential maintenance on our token system to improve reliability and performance.
-                        </p>
-                    </div>
-                    <div class="rounded-md bg-secondary/50 p-3 text-left">
-                        <div class="flex items-center gap-2 text-primary mb-1">
-                            <i data-lucide="shield" class="h-4 w-4"></i>
-                            <span class="font-medium">Security Enhancement</span>
-                        </div>
-                        <p class="text-muted-foreground">
-                            Implementing additional security measures to protect our sharing system.
-                        </p>
+<body class="bg-background text-foreground font-sans antialiased min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div class="container flex h-14 max-w-screen-2xl items-center justify-between px-4">
+            <a href="/" class="flex items-center gap-2">
+                <div class="logo-container nav-logo">
+                    <div class="logo-wrapper">
+                        <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="logo">
+                        <div class="logo-shine"></div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Contact Section -->
-            <div class="pt-4">
-                <a href="https://t.me/yourhandle" target="_blank" 
-                   class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
-                    <i data-lucide="message-circle" class="h-4 w-4 mr-2"></i>
-                    Contact Support
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-lg hidden sm:inline-block">WinkSpam</span>
+                    <span class="rounded-lg bg-primary/10 px-2 py-1 text-xs font-medium text-primary">Beta</span>
+                </div>
+            </a>
+            
+            <nav class="flex items-center gap-2 sm:gap-4">
+                <button id="settingsBtn" class="hover:bg-accent hover:text-accent-foreground inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors">
+                    <i data-lucide="settings" class="h-4 w-4"></i>
+                    <span class="hidden sm:inline">Settings</span>
+                </button>
+                <a href="/admin" class="hover:bg-accent hover:text-accent-foreground inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors">
+                    <i data-lucide="shield" class="h-4 w-4"></i>
+                    <span class="hidden sm:inline">Admin</span>
                 </a>
-                <p class="text-sm text-muted-foreground mt-2">
-                    For urgent inquiries, please contact our support team
-                </p>
+                <button id="logoutBtn" class="hidden hover:bg-destructive/90 bg-destructive text-destructive-foreground inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors">
+                    <i data-lucide="log-out" class="h-4 w-4"></i>
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        <!-- Hero Section -->
+        <section class="hero-gradient border-b border-border/40">
+            <div class="container mx-auto px-4 py-12 sm:py-16">
+                <div class="text-center space-y-6 hero-content">
+                    <div class="logo-container animate-float mb-6">
+                        <div class="logo-wrapper">
+                            <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="WinkSpam Logo" class="logo">
+                            <div class="logo-shine"></div>
+                        </div>
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                        WinkSpam Share Tool
+                    </h1>
+                    <p class="text-muted-foreground max-w-[600px] mx-auto text-lg">
+                        Advanced Facebook sharing tool with secure key authentication and real-time progress tracking.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Features -->
+        <section class="py-12 container mx-auto px-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Speed Feature -->
+                <div class="feature-card rounded-lg p-6">
+                    <div class="feature-icon w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="zap" class="h-6 w-6 text-primary-foreground"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Lightning Fast</h3>
+                    <p class="text-muted-foreground">
+                        Process multiple shares simultaneously with our optimized sharing engine.
+                    </p>
+                </div>
+
+                <!-- Security Feature -->
+                <div class="feature-card rounded-lg p-6">
+                    <div class="feature-icon w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="shield-check" class="h-6 w-6 text-primary-foreground"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Secure Access</h3>
+                    <p class="text-muted-foreground">
+                        Protected by key authentication system with role-based access control.
+                    </p>
+                </div>
+
+                <!-- Analytics Feature -->
+                <div class="feature-card rounded-lg p-6">
+                    <div class="feature-icon w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="activity" class="h-6 w-6 text-primary-foreground"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Real-time Tracking</h3>
+                    <p class="text-muted-foreground">
+                        Monitor share progress and performance in real-time with detailed analytics.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Authentication Section -->
+            <div class="max-w-lg mx-auto space-y-6">
+                <div id="keySection" class="rounded-lg border border-border bg-card p-6 shadow-lg fade-in">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="key" class="h-5 w-5 text-primary"></i>
+                                <h2 class="text-lg font-semibold">Authentication</h2>
+                            </div>
+                            <span class="text-xs text-muted-foreground">Secure Access</span>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <input type="text" id="key" placeholder="Enter your access key" 
+                                       class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i data-lucide="lock" class="h-4 w-4 text-muted-foreground"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="rememberKey" class="h-4 w-4 rounded border-input bg-background">
+                                <label for="rememberKey" class="text-sm text-muted-foreground">Remember my key</label>
+                            </div>
+
+                            <button onclick="validateKey()" 
+                                    class="inline-flex items-center justify-center w-full rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                                <i data-lucide="unlock" class="h-4 w-4 mr-2"></i>
+                                Validate Key
+                            </button>
+
+                            <div class="flex justify-center items-center gap-2 text-sm">
+                                <span class="text-muted-foreground">Don't have a key?</span>
+                                <button onclick="generateKey()" 
+                                        class="inline-flex items-center text-primary hover:text-primary/80 transition-colors">
+                                    <i data-lucide="plus-circle" class="h-4 w-4 mr-1"></i>
+                                    Generate new key
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Share Section -->
+                <div id="shareSection" class="hidden rounded-lg border border-border bg-card p-6 shadow-lg fade-in">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="share-2" class="h-5 w-5 text-primary"></i>
+                                <h2 class="text-lg font-semibold">Share Configuration</h2>
+                            </div>
+                            <div id="planBadge" class="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                                Free Plan
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium flex items-center gap-2">
+                                    <span>Post ID</span>
+                                    <button class="text-muted-foreground hover:text-foreground" 
+                                            onclick="showPostIdHelp()">
+                                        <i data-lucide="help-circle" class="h-4 w-4"></i>
+                                    </button>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="postId" placeholder="Enter Facebook Post ID" 
+                                           class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i data-lucide="link" class="h-4 w-4 text-muted-foreground"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <label class="text-sm font-medium">Share Count</label>
+                                    <span id="maxSharesLabel" class="text-xs text-muted-foreground">Available: 0</span>
+                                </div>
+                                <div class="relative">
+                                    <input type="number" id="shareCount" placeholder="1-1000" min="1" max="1000"
+                                           class="w-full h-10 px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i data-lucide="hash" class="h-4 w-4 text-muted-foreground"></i>
+                                    </div>
+                                </div>
+                                <div id="shareLimitInfo" class="text-xs text-muted-foreground flex items-center gap-1">
+                                    <i data-lucide="info" class="h-3 w-3"></i>
+                                    <span>Share count will adjust to available tokens</span>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar (Hidden by default) -->
+                            <div id="progressBar" class="hidden space-y-2">
+                                <div class="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-muted-foreground">
+                                    <span id="progressText">0%</span>
+                                    <span id="progressCount">0/0</span>
+                                </div>
+                            </div>
+
+                            <button onclick="startShare()" 
+                                    class="inline-flex items-center justify-center w-full rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                                <i data-lucide="play" class="h-4 w-4 mr-2"></i>
+                                Start Share Process
+                            </button>
+                        </div>
+
+                        <!-- Cooldown Timer -->
+                        <div id="cooldownTimer" class="hidden">
+                            <div class="flex items-center justify-between p-3 rounded-md bg-secondary/50 border border-border">
+                                <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                    <i data-lucide="clock" class="h-4 w-4"></i>
+                                    Next share available in:
+                                </span>
+                                <span id="cooldownTime" class="text-sm font-medium text-primary"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Section -->
+                <div id="status" class="hidden"></div>
+            </div>
+        </main>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
+            <div class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 rounded-lg">
+                <div class="flex flex-col space-y-1.5 text-center sm:text-left">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-lg font-semibold leading-none tracking-tight">Settings</h2>
+                        <button onclick="closeSettings()" class="text-muted-foreground hover:text-foreground">
+                            <i data-lucide="x" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                    <p class="text-sm text-muted-foreground">Manage your preferences and view plan details</p>
+                </div>
+
+                <div class="grid gap-4">
+                    <!-- Plan Information -->
+                    <div class="rounded-lg border p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-medium">Your Plan</h3>
+                            <span id="planType" class="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                                Free Plan
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-muted-foreground">Share Limit</span>
+                                <span id="shareLimit" class="font-medium">250 per request</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-muted-foreground">Cooldown</span>
+                                <span id="planCooldown" class="font-medium">60 seconds</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Usage Statistics -->
+                    <div class="rounded-lg border p-4 space-y-3">
+                        <h3 class="text-sm font-medium">Usage Statistics</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-muted-foreground">Total Shares</span>
+                                <span id="totalShares" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-muted-foreground">Last Used</span>
+                                <span id="lastUsed" class="font-medium">Never</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Support Section -->
+                    <div class="rounded-lg border p-4 space-y-3">
+                        <h3 class="text-sm font-medium">Support</h3>
+                        <p class="text-sm text-muted-foreground">Need help or want to upgrade your plan?</p>
+                        <a href="https://t.me/yourhandle" target="_blank" 
+                           class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2">
+                            <i data-lucide="message-circle" class="h-4 w-4 mr-2"></i>
+                            Contact Support
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="py-6 px-4 text-center">
-        <p class="text-sm text-muted-foreground">
-            &copy; {{ now().year }} WinkSpam. All rights reserved.
-        </p>
-    </footer>
+        <!-- Help Modal -->
+        <div id="helpModal" class="hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
+            <div class="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 rounded-lg">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">How to Find Post ID</h3>
+                    <button onclick="closeHelp()" class="text-muted-foreground hover:text-foreground">
+                        <i data-lucide="x" class="h-4 w-4"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-sm text-muted-foreground">
+                        To find a Facebook post ID:
+                    </p>
+                    <ol class="list-decimal list-inside space-y-2 text-sm">
+                        <li>Open the post you want to share</li>
+                        <li>Look at the URL in your browser</li>
+                        <li>Find the long number after "/posts/" or in the URL</li>
+                        <li>That number is your Post ID</li>
+                    </ol>
+                    <div class="rounded-md bg-secondary/50 p-3 text-sm">
+                        <p class="text-muted-foreground">Example URL:</p>
+                        <code class="text-primary">https://facebook.com/username/posts/123456789</code>
+                        <p class="text-muted-foreground mt-2">Post ID would be: <span class="text-primary">123456789</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+    </div>
 
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // Auto-refresh page every 5 minutes to check if maintenance is complete
-        setTimeout(function() {
-            window.location.reload();
-        }, 5 * 60 * 1000);
+        // Common UI Functions
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `
+                flex items-center gap-2 rounded-lg border border-border bg-card p-4 shadow-lg
+                ${type === 'success' ? 'text-green-500' : 'text-destructive'}
+                transform transition-all duration-300 opacity-0 translate-y-2
+            `;
+            toast.innerHTML = `
+                <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="h-5 w-5"></i>
+                <span class="text-sm">${message}</span>
+            `;
+            
+            const container = document.getElementById('toast-container');
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        function showStatus(message, isError = false) {
+            const statusHtml = `
+                <div class="rounded-lg border border-border bg-card p-6 shadow-lg fade-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i data-lucide="${isError ? 'alert-circle' : 'check-circle'}" class="h-5 w-5 ${isError ? 'text-destructive' : 'text-primary'}"></i>
+                        <h2 class="text-lg font-semibold">Status Update</h2>
+                    </div>
+                    <div class="${isError ? 'text-destructive' : 'text-card-foreground'}">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            const status = document.getElementById('status');
+            status.innerHTML = statusHtml;
+            status.classList.remove('hidden');
+            lucide.createIcons();
+
+            if (window.innerWidth < 768) {
+                status.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // Key Management
+        function validateKey() {
+            const key = document.getElementById('key').value;
+            const remember = document.getElementById('rememberKey').checked;
+
+            if (!key) {
+                showStatus('Please enter a key', true);
+                return;
+            }
+
+            $.post('/validate_key', { 
+                key: key,
+                remember: remember 
+            }, function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('keySection').style.display = 'none';
+                    document.getElementById('shareSection').style.display = 'block';
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    
+                    updatePlanInfo(response.key_info);
+                    showStatus(`
+                        <div class="flex items-center gap-2 text-green-500">
+                            <i data-lucide="check-circle" class="h-5 w-5"></i>
+                            <span>Key validated successfully!</span>
+                        </div>
+                    `);
+
+                    updateTokenCount();
+                } else {
+                    showStatus(`
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="x-circle" class="h-5 w-5"></i>
+                            <span>${response.message}</span>
+                        </div>
+                    `, true);
+                }
+            });
+        }
+
+        function generateKey() {
+            $.post('/generate_key', function(response) {
+                showStatus(`
+                    <div class="space-y-4">
+                        <div class="p-4 rounded-md bg-secondary/50 border border-border">
+                            <p class="font-semibold mb-2">Your key:</p>
+                            <code class="text-primary break-all">${response.key}</code>
+                        </div>
+                        <div class="flex items-center gap-2 text-yellow-500">
+                            <i data-lucide="alert-triangle" class="h-4 w-4 flex-shrink-0"></i>
+                            <span>Key requires admin approval before use</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-primary">
+                            <i data-lucide="info" class="h-4 w-4 flex-shrink-0"></i>
+                            <span>Contact admin to upgrade to Premium for unlimited shares</span>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        // Share Management
+        function showProgress(success, failed, total) {
+            const progress = ((success + failed) / total) * 100;
+            return `
+                <div class="space-y-4">
+                    <div class="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                        <div class="bg-primary h-2 transition-all duration-500" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
+                            <span class="text-muted-foreground text-sm">Success</span>
+                            <span class="text-xl font-semibold text-green-500">${success}</span>
+                        </div>
+                        <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
+                            <span class="text-muted-foreground text-sm">Failed</span>
+                            <span class="text-xl font-semibold text-destructive">${failed}</span>
+                        </div>
+                        <div class="flex flex-col items-center p-3 rounded-md bg-secondary/50 border border-border">
+                            <span class="text-muted-foreground text-sm">Total</span>
+                            <span class="text-xl font-semibold">${total}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let shareInProgress = false;
+
+        function startShare() {
+            if (shareInProgress) return;
+
+            const postId = document.getElementById('postId').value;
+            const shareCount = parseInt(document.getElementById('shareCount').value);
+            const maxShares = parseInt(document.getElementById('shareCount').max);
+
+            if (!postId || !shareCount) {
+                showStatus('Please fill in all fields', true);
+                return;
+            }
+
+            if (shareCount < 1 || shareCount > maxShares) {
+                showStatus(`Share count must be between 1 and ${maxShares}`, true);
+                return;
+            }
+
+            shareInProgress = true;
+            document.getElementById('shareSection').classList.add('opacity-50', 'pointer-events-none');
+            document.getElementById('progressBar').classList.remove('hidden');
+
+            showStatus(`
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 text-primary">
+                        <i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i>
+                        <span>Share process started...</span>
+                    </div>
+                    ${showProgress(0, 0, shareCount)}
+                </div>
+            `);
+
+            $.post('/share', {
+                post_id: postId,
+                share_count: shareCount
+            })
+            .done(function(response) {
+                shareInProgress = false;
+                document.getElementById('shareSection').classList.remove('opacity-50', 'pointer-events-none');
+                document.getElementById('progressBar').classList.add('hidden');
+
+                const message = response.message;
+                const isError = response.status === 'error';
+
+                if (!isError) {
+                    const matches = message.match(/Success: (\d+), Failed: (\d+)/);
+                    if (matches) {
+                        const successCount = parseInt(matches[1]);
+                        const failedCount = parseInt(matches[2]);
+
+                        if (response.updated_max_shares) {
+                            document.getElementById('maxSharesLabel').textContent = `Available: ${response.updated_max_shares}`;
+                            document.getElementById('shareCount').max = response.updated_max_shares;
+                        }
+
+                        if (response.key_info) {
+                            updatePlanInfo(response.key_info);
+                            
+                            // Start cooldown for free users
+                            if (response.key_info.role === 'free') {
+                                startCooldown();
+                            }
+                        }
+
+                        showStatus(`
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-2 text-primary">
+                                    <i data-lucide="check-circle" class="h-5 w-5"></i>
+                                    <span>${message}</span>
+                                </div>
+                                ${showProgress(successCount, failedCount, shareCount)}
+                                <button onclick="resetForm()" 
+                                        class="inline-flex items-center justify-center w-full rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2 mt-4">
+                                    <i data-lucide="refresh-cw" class="h-4 w-4 mr-2"></i>
+                                    Start New Share
+                                </button>
+                            </div>
+                        `);
+                    }
+                } else {
+                    showStatus(message, true);
+                }
+            })
+            .fail(function() {
+                shareInProgress = false;
+                document.getElementById('shareSection').classList.remove('opacity-50', 'pointer-events-none');
+                document.getElementById('progressBar').classList.add('hidden');
+                showStatus('An error occurred while processing your request. Please try again.', true);
+            });
+        }
+
+        // UI Management
+        function updatePlanInfo(keyInfo) {
+            if (!keyInfo) return;
+
+            const planBadge = document.getElementById('planBadge');
+            const planType = document.getElementById('planType');
+            const shareLimit = document.getElementById('shareLimit');
+            const planCooldown = document.getElementById('planCooldown');
+            const totalShares = document.getElementById('totalShares');
+            const lastUsed = document.getElementById('lastUsed');
+            const shareLimitInfo = document.getElementById('shareLimitInfo');
+
+            planBadge.textContent = keyInfo.role_name;
+            planType.textContent = keyInfo.role_name;
+            shareLimit.textContent = keyInfo.share_limit === "Unlimited" ? "Unlimited" : `${keyInfo.share_limit} per request`;
+            planCooldown.textContent = keyInfo.cooldown > 0 ? `${keyInfo.cooldown} seconds` : 'None';
+            totalShares.textContent = keyInfo.shares_completed;
+            lastUsed.textContent = keyInfo.last_used || 'Never';
+
+            // Update share limit info
+            if (keyInfo.role === 'free') {
+                shareLimitInfo.innerHTML = `
+                    <i data-lucide="info" class="h-3 w-3"></i>
+                    <span>Limited to ${keyInfo.share_limit} shares per request (${keyInfo.cooldown}s cooldown)</span>
+                `;
+            } else {
+                shareLimitInfo.innerHTML = `
+                    <i data-lucide="infinity" class="h-3 w-3"></i>
+                    <span>Unlimited shares with no cooldown</span>
+                `;
+            }
+            lucide.createIcons();
+
+            // Update UI theme based on plan
+            if (keyInfo.role === 'premium') {
+                planBadge.className = 'inline-flex items-center rounded-full bg-yellow-500/10 px-3 py-1 text-xs font-medium text-yellow-500';
+                planType.className = 'inline-flex items-center rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-500';
+            }
+        }
+
+        // Settings Modal
+        function showSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+            // Update settings info
+            $.get('/get_key_info', function(response) {
+                if (response.status === 'success') {
+                    updatePlanInfo(response.key_info);
+                }
+            });
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        // Help Modal
+        function showPostIdHelp() {
+            document.getElementById('helpModal').classList.remove('hidden');
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.add('hidden');
+        }
+
+        // Initialize Page
+        document.addEventListener('DOMContentLoaded', function() {
+            $.get('/check_session', function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('key').value = response.key;
+                    document.getElementById('keySection').style.display = 'none';
+                    document.getElementById('shareSection').style.display = 'block';
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    
+                    updatePlanInfo(response.key_info);
+                    updateTokenCount();
+                }
+            });
+
+            // Add event listeners
+            document.getElementById('settingsBtn').addEventListener('click', showSettings);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Modal click handlers
+            document.getElementById('settingsModal').addEventListener('click', function(e) {
+                if (e.target === this) closeSettings();
+            });
+            
+            document.getElementById('helpModal').addEventListener('click', function(e) {
+                if (e.target === this) closeHelp();
+            });
+
+            // Initialize icons
+            lucide.createIcons();
+        });
+
+        // Keyboard handlers
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSettings();
+                closeHelp();
+            }
+        });
     </script>
 </body>
 </html>
