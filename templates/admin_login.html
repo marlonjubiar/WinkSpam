@@ -68,7 +68,15 @@
 
         .ios-button:active {
             transform: scale(0.98);
-            opacity: 0.9;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.3s ease-out forwards;
         }
 
         .error-message {
@@ -84,51 +92,66 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
-    <!-- Header -->
-    <header class="sticky top-0 z-50 backdrop-blur-xl bg-[#000000cc] border-b border-[#38383a]">
-        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="Logo" class="w-8 h-8 rounded-lg">
-                <span class="text-lg font-semibold">WinkSpam Pro Admin</span>
+<body class="min-h-screen">
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full backdrop-blur-xl bg-black/80 border-b border-[#38383a] z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                        <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="Logo" class="w-8 h-8 rounded-lg">
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-semibold">WinkSpam Pro</span>
+                        <span class="text-xs text-[#8e8e93]">Admin Panel</span>
+                    </div>
+                </div>
+                <a href="/" class="p-2 rounded-xl text-[#8e8e93] hover:text-white transition-colors">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                </a>
             </div>
-            <a href="/" class="text-[#8e8e93] hover:text-white transition-colors">
-                <i data-lucide="home" class="w-5 h-5"></i>
-            </a>
         </div>
-    </header>
+    </nav>
 
     <!-- Main Content -->
-    <main class="flex-1 flex items-center justify-center p-4">
-        <div class="w-full max-w-md">
-            <div class="ios-card p-6">
-                <div class="text-center mb-8">
-                    <h1 class="text-2xl font-bold mb-2">Admin Access</h1>
-                    <p class="text-[#8e8e93]">Please enter your admin password to continue</p>
+    <main class="pt-24 px-4 max-w-md mx-auto">
+        <div class="ios-card p-6 animate-slide-up">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold mb-2">Admin Access</h1>
+                <p class="text-[#8e8e93]">Enter your admin password to continue</p>
+            </div>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="error-message mb-6">
+                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                        {{ messages[0] }}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="space-y-6">
+                <div class="space-y-4">
+                    <div class="relative">
+                        <input type="password" name="password" 
+                               class="ios-input pr-10" 
+                               placeholder="Enter admin password"
+                               required
+                               autocomplete="current-password">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i data-lucide="lock" class="w-5 h-5 text-[#8e8e93]"></i>
+                        </div>
+                    </div>
                 </div>
 
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        <div class="error-message mb-6">
-                            <i data-lucide="alert-circle" class="w-5 h-5"></i>
-                            {{ messages[0] }}
-                        </div>
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST" class="space-y-6">
-                    <div>
-                        <input type="password" name="password" 
-                               class="ios-input" 
-                               placeholder="Enter admin password"
-                               required>
-                    </div>
-                    <button type="submit" class="ios-button text-white">
-                        <i data-lucide="log-in" class="w-5 h-5"></i>
-                        Login to Admin Panel
-                    </button>
-                </form>
-            </div>
+                <button type="submit" class="ios-button text-white">
+                    <i data-lucide="log-in" class="w-5 h-5"></i>
+                    Login to Admin Panel
+                </button>
+            </form>
         </div>
     </main>
 
