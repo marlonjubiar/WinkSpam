@@ -34,20 +34,12 @@
             color: var(--text-primary);
         }
 
-        /* Modern iOS Card */
         .ios-card {
             background-color: var(--card-bg);
             border-radius: 16px;
             border: 1px solid var(--border-color);
-            overflow: hidden;
-            transition: transform 0.2s ease;
         }
 
-        .ios-card:hover {
-            transform: translateY(-2px);
-        }
-
-        /* iOS Input Style */
         .ios-input {
             background-color: var(--input-bg);
             border: none;
@@ -56,6 +48,7 @@
             padding: 12px 16px;
             font-size: 16px;
             transition: all 0.2s;
+            width: 100%;
         }
 
         .ios-input:focus {
@@ -63,14 +56,13 @@
             box-shadow: 0 0 0 2px var(--accent-blue);
         }
 
-        /* iOS Button */
         .ios-button {
             background-color: var(--accent-blue);
             border-radius: 12px;
             padding: 12px 20px;
             font-weight: 600;
             transition: all 0.2s;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
@@ -80,29 +72,42 @@
             transform: scale(0.96);
         }
 
-        /* Status Badge */
-        .ios-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+        /* Switch Component */
+        .ios-switch {
+            width: 51px;
+            height: 31px;
+            background-color: var(--input-bg);
+            border-radius: 31px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
 
-        .badge-premium {
-            background: linear-gradient(135deg, #ffd700, #ffa500);
-            color: black;
+        .ios-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 27px;
+            height: 27px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
         }
 
-        .badge-free {
-            background-color: var(--accent-blue);
-            color: white;
+        .ios-switch.active {
+            background-color: var(--accent-green);
+        }
+
+        .ios-switch.active::after {
+            transform: translateX(20px);
         }
 
         /* Progress Bar */
         .ios-progress {
             background-color: var(--input-bg);
             border-radius: 8px;
-            height: 8px;
+            height: 6px;
             overflow: hidden;
         }
 
@@ -112,8 +117,8 @@
             transition: width 0.3s ease;
         }
 
-        /* Floating Action Button */
-        .fab {
+        /* Quick Action Button */
+        .quick-action {
             position: fixed;
             bottom: 24px;
             right: 24px;
@@ -128,43 +133,8 @@
             transition: transform 0.2s;
         }
 
-        .fab:active {
+        .quick-action:active {
             transform: scale(0.92);
-        }
-
-        /* Stats Card */
-        .stats-card {
-            background: linear-gradient(145deg, var(--card-bg), var(--input-bg));
-            border-radius: 12px;
-            padding: 16px;
-        }
-
-        /* Animations */
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .animate-slide-up {
-            animation: slideUp 0.3s ease-out forwards;
-        }
-
-        /* Mobile Optimizations */
-        @media (max-width: 640px) {
-            .ios-card {
-                margin: 12px;
-                border-radius: 12px;
-            }
-
-            .ios-input, .ios-button {
-                font-size: 15px;
-                padding: 10px 16px;
-            }
-
-            .fab {
-                bottom: 16px;
-                right: 16px;
-            }
         }
 
         /* Toast Notifications */
@@ -198,47 +168,72 @@
             }
         }
 
-        /* Side Menu */
-        .side-menu {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100%;
-            background-color: var(--card-bg);
-            transition: right 0.3s ease;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .side-menu.active {
-            right: 0;
-        }
-
-        .menu-backdrop {
+        /* Modal */
+        .ios-modal {
             position: fixed;
             inset: 0;
             background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
             opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 999;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
 
-        .menu-backdrop.active {
+        .ios-modal.active {
             opacity: 1;
-            pointer-events: auto;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .ios-modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        /* Stats Card */
+        .stats-card {
+            background: linear-gradient(145deg, var(--card-bg), var(--input-bg));
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 640px) {
+            .ios-card {
+                margin: 12px;
+                border-radius: 12px;
+            }
+
+            .modal-content {
+                margin: 12px;
+            }
+
+            .quick-action {
+                bottom: 16px;
+                right: 16px;
+            }
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen">
     <!-- Navigation Bar -->
     <nav class="fixed top-0 w-full backdrop-blur-xl bg-black/80 border-b border-[#38383a] z-50">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo Section -->
                 <div class="flex items-center space-x-3">
                     <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                         <img src="https://i.imgur.com/wyAJhIm.jpeg" alt="Logo" class="w-8 h-8 rounded-lg">
@@ -249,7 +244,6 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="flex items-center space-x-4">
                     <button onclick="showStats()" class="p-2 rounded-xl hover:bg-[#ffffff1a] transition-colors">
                         <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
@@ -271,23 +265,29 @@
     <!-- Main Content -->
     <main class="pt-20 pb-24 px-4 max-w-7xl mx-auto">
         <!-- Authentication Section -->
-        <div id="keySection" class="ios-card p-6 mb-6 animate-slide-up">
+        <div id="keySection" class="ios-card p-6 mb-6">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-semibold">Authentication</h2>
-                <span class="ios-badge badge-free">Secure Access</span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-[#0a84ff1a] text-[#0a84ff]">
+                    Secure Access
+                </span>
             </div>
             <div class="space-y-4">
-                <input type="text" id="key" placeholder="Enter your access key" class="ios-input w-full">
+                <input type="text" id="key" placeholder="Enter your access key" class="ios-input">
+                
                 <div class="flex items-center justify-between">
-                    <label class="text-[#8e8e93] text-sm">Remember this key</label>
-                    <div id="rememberKey" class="ios-switch"></div>
+                    <label class="text-[#8e8e93] text-sm">Remember Key</label>
+                    <div id="rememberKey" class="ios-switch" onclick="this.classList.toggle('active')"></div>
                 </div>
+
                 <button onclick="validateKey()" class="ios-button w-full text-white">
                     <i data-lucide="unlock" class="w-5 h-5"></i>
                     Validate Key
                 </button>
-                <div class="text-center">
-                    <button onclick="generateKey()" class="text-[#0a84ff] text-sm hover:opacity-80 transition-opacity">
+
+                <div class="flex justify-center">
+                    <button onclick="generateKey()" 
+                            class="text-[#0a84ff] text-sm hover:opacity-80 transition-opacity">
                         Generate new key
                     </button>
                 </div>
@@ -295,13 +295,15 @@
         </div>
 
         <!-- Share Section -->
-        <div id="shareSection" class="hidden space-y-6 animate-slide-up">
-            <!-- Share Configuration -->
+        <div id="shareSection" class="hidden space-y-6">
             <div class="ios-card p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-xl font-semibold">Share Configuration</h2>
-                    <div id="planBadge" class="ios-badge badge-free">Free Plan</div>
+                    <div id="planBadge" class="px-3 py-1 rounded-full text-xs font-medium bg-[#0a84ff1a] text-[#0a84ff]">
+                        Free Plan
+                    </div>
                 </div>
+
                 <div class="space-y-4">
                     <div>
                         <label class="flex items-center gap-2 text-sm text-[#8e8e93] mb-2">
@@ -310,21 +312,22 @@
                                 <i data-lucide="help-circle" class="w-4 h-4"></i>
                             </button>
                         </label>
-                        <input type="text" id="postId" placeholder="Enter Facebook Post ID" class="ios-input w-full">
+                        <input type="text" id="postId" placeholder="Enter Facebook Post ID" class="ios-input">
                     </div>
+
                     <div>
                         <div class="flex justify-between mb-2">
                             <label class="text-sm text-[#8e8e93]">Share Count</label>
                             <span id="maxSharesLabel" class="text-xs text-[#8e8e93]">Available: 0</span>
                         </div>
-                        <input type="number" id="shareCount" placeholder="1-1000" min="1" max="1000" class="ios-input w-full">
+                        <input type="number" id="shareCount" placeholder="1-1000" min="1" max="1000" class="ios-input">
                     </div>
 
-                    <!-- Share Progress -->
                     <div id="progressSection" class="hidden space-y-4">
                         <div class="ios-progress">
                             <div class="ios-progress-bar" style="width: 0%"></div>
                         </div>
+
                         <div class="grid grid-cols-3 gap-4">
                             <div class="stats-card">
                                 <div class="text-xs text-[#8e8e93] mb-1">Success</div>
@@ -348,159 +351,72 @@
                 </div>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="ios-card p-6">
-                <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
-                <div id="activityLog" class="space-y-3">
-                    <!-- Activity items will be added here -->
-                </div>
-            </div>
+            <!-- Quick Share FAB -->
+            <button onclick="showQuickShare()" class="quick-action">
+                <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+            </button>
         </div>
+
+        <!-- Status Section -->
+        <div id="status" class="hidden"></div>
     </main>
 
-    <!-- Floating Action Button -->
-    <button onclick="showQuickShare()" class="fab">
-        <i data-lucide="share" class="w-6 h-6 text-white"></i>
-    </button>
-
-    <!-- Side Menu -->
-    <div class="menu-backdrop" onclick="closeMenu()"></div>
-    <div class="side-menu">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-lg font-semibold">Menu</h2>
-            <button onclick="closeMenu()" class="text-[#8e8e93] hover:text-white">
-                <i data-lucide="x" class="w-6 h-6"></i>
-            </button>
-        </div>
-        
-        <!-- User Profile -->
-        <div class="ios-card p-4 mb-6">
-            <div class="flex items-center space-x-3 mb-4">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                    <i data-lucide="user" class="w-6 h-6 text-white"></i>
-                </div>
-                <div>
-                    <div id="userPlan" class="text-sm font-semibold">Free Plan</div>
-                    <div id="userKey" class="text-xs text-[#8e8e93] truncate">No active key</div>
-                </div>
-            </div>
-            <div class="text-xs text-[#8e8e93]">
-                <div class="flex justify-between mb-1">
-                    <span>Share Limit:</span>
-                    <span id="shareLimit">250 per request</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>Cooldown:</span>
-                    <span id="cooldownLimit">60 seconds</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="space-y-2 mb-6">
-            <button onclick="showStats()" class="w-full p-3 rounded-xl hover:bg-[#ffffff1a] transition-colors flex items-center space-x-3">
-                <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
-                <span>View Statistics</span>
-            </button>
-            <button onclick="showSettings()" class="w-full p-3 rounded-xl hover:bg-[#ffffff1a] transition-colors flex items-center space-x-3">
-                <i data-lucide="settings" class="w-5 h-5"></i>
-                <span>Settings</span>
-            </button>
-            <a href="/admin" class="w-full p-3 rounded-xl hover:bg-[#ffffff1a] transition-colors flex items-center space-x-3">
-                <i data-lucide="shield" class="w-5 h-5"></i>
-                <span>Admin Panel</span>
-            </a>
-        </div>
-
-        <!-- Support Section -->
-        <div class="ios-card p-4">
-            <h3 class="text-sm font-semibold mb-2">Need Help?</h3>
-            <a href="https://t.me/yourhandle" target="_blank" 
-               class="ios-button w-full text-white bg-[#0088cc]">
-                <i data-lucide="message-circle" class="w-4 h-4"></i>
-                Contact Support
-            </a>
-        </div>
-    </div>
-
-    <!-- Modals -->
-    <!-- Stats Modal -->
-    <div id="statsModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50">
-        <div class="fixed inset-x-4 top-[50%] translate-y-[-50%] max-w-lg mx-auto ios-card p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-semibold">Statistics</h2>
-                <button onclick="closeStats()" class="text-[#8e8e93] hover:text-white">
+    <!-- Quick Share Modal -->
+    <div id="quickShareModal" class="ios-modal">
+        <div class="modal-content p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold">Quick Share</h2>
+                <button onclick="closeQuickShare()" class="text-[#8e8e93] hover:text-white">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
+
             <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="stats-card">
-                        <div class="text-[#8e8e93] text-sm mb-1">Total Shares</div>
-                        <div id="totalShares" class="text-2xl font-bold">0</div>
-                    </div>
-                    <div class="stats-card">
-                        <div class="text-[#8e8e93] text-sm mb-1">Success Rate</div>
-                        <div id="successRate" class="text-2xl font-bold text-[#30d158]">0%</div>
-                    </div>
-                </div>
-                <div class="ios-card p-4">
-                    <div class="text-sm font-semibold mb-3">Share History</div>
-                    <div id="shareHistory" class="space-y-2">
-                        <!-- Share history items will be added here -->
-                    </div>
+                <input type="text" id="quickPostId" placeholder="Enter Facebook Post ID" class="ios-input">
+                
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="quickShare(50)" class="ios-button text-white py-3">
+                        50
+                    </button>
+                    <button onclick="quickShare(100)" class="ios-button text-white py-3">
+                        100
+                    </button>
+                    <button onclick="quickShare(250)" class="ios-button text-white py-3">
+                        250
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Help Modal -->
-    <div id="helpModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50">
-        <div class="fixed inset-x-4 top-[50%] translate-y-[-50%] max-w-lg mx-auto ios-card p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-semibold">How to Find Post ID</h2>
+    <div id="helpModal" class="ios-modal">
+        <div class="modal-content p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold">How to Find Post ID</h2>
                 <button onclick="closeHelp()" class="text-[#8e8e93] hover:text-white">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
             <div class="space-y-4">
-                <p class="text-[#8e8e93]">Follow these steps to find a Facebook post ID:</p>
-                <ol class="list-decimal list-inside space-y-2 text-[#8e8e93]">
-                    <li>Open the Facebook post you want to share</li>
-                    <li>Look at the URL in your browser</li>
-                    <li>Find the long number after "/posts/"</li>
-                    <li>That number is your Post ID</li>
+                <ol class="space-y-3 text-[#8e8e93]">
+                    <li class="flex gap-3">
+                        <span class="w-6 h-6 rounded-full bg-[#0a84ff1a] text-[#0a84ff] flex items-center justify-center flex-shrink-0">1</span>
+                        <span>Open the Facebook post you want to share</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="w-6 h-6 rounded-full bg-[#0a84ff1a] text-[#0a84ff] flex items-center justify-center flex-shrink-0">2</span>
+                        <span>Look at the URL in your browser</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="w-6 h-6 rounded-full bg-[#0a84ff1a] text-[#0a84ff] flex items-center justify-center flex-shrink-0">3</span>
+                        <span>Find the number after "/posts/"</span>
+                    </li>
                 </ol>
-                <div class="ios-card p-4 mt-4">
+                <div class="bg-[#1c1c1e] rounded-lg p-4 mt-4">
                     <p class="text-[#8e8e93] mb-2">Example URL:</p>
                     <code class="text-[#0a84ff] text-sm break-all">https://facebook.com/username/posts/123456789</code>
                     <p class="text-[#8e8e93] mt-2">Post ID would be: <span class="text-[#0a84ff]">123456789</span></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Share Modal -->
-    <div id="quickShareModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50">
-        <div class="fixed inset-x-4 bottom-0 mb-6 max-w-lg mx-auto ios-card p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-semibold">Quick Share</h2>
-                <button onclick="closeQuickShare()" class="text-[#8e8e93] hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <div class="space-y-4">
-                <input type="text" placeholder="Enter Post ID" class="ios-input w-full">
-                <div class="flex gap-4">
-                    <button onclick="quickShare(50)" class="ios-button flex-1">
-                        50 Shares
-                    </button>
-                    <button onclick="quickShare(100)" class="ios-button flex-1">
-                        100 Shares
-                    </button>
-                    <button onclick="quickShare(250)" class="ios-button flex-1">
-                        250 Shares
-                    </button>
                 </div>
             </div>
         </div>
@@ -510,13 +426,16 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
+        // Global variables
+        let shareInProgress = false;
+
         // UI Functions
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = 'ios-toast';
             
-            const icon = type === 'success' ? 'check-circle' : 'alert-circle';
-            const color = type === 'success' ? '#30d158' : '#ff453a';
+            const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info';
+            const color = type === 'success' ? '#30d158' : type === 'error' ? '#ff453a' : '#0a84ff';
             
             toast.innerHTML = `
                 <i data-lucide="${icon}" class="w-5 h-5" style="color: ${color}"></i>
@@ -533,58 +452,74 @@
             }, 3000);
         }
 
-        // Add activity to log
-        function addActivity(text, status = 'success') {
-            const activityLog = document.getElementById('activityLog');
-            const item = document.createElement('div');
-            item.className = 'flex items-center justify-between text-sm';
-            
-            const color = status === 'success' ? '#30d158' : '#ff453a';
-            const icon = status === 'success' ? 'check-circle' : 'x-circle';
-            
-            item.innerHTML = `
-                <div class="flex items-center gap-2">
-                    <i data-lucide="${icon}" class="w-4 h-4" style="color: ${color}"></i>
-                    <span>${text}</span>
-                </div>
-                <span class="text-[#8e8e93]">${new Date().toLocaleTimeString()}</span>
-            `;
-            
-            activityLog.insertBefore(item, activityLog.firstChild);
-            if (activityLog.children.length > 5) {
-                activityLog.removeChild(activityLog.lastChild);
+        // Key Management Functions
+        function generateKey() {
+            showToast('Generating key...', 'info');
+
+            $.post('/generate_key', function(response) {
+                if (response.status === 'success') {
+                    const keyDisplay = `
+                        <div class="ios-card p-6 mb-4">
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[#8e8e93]">Your Key:</span>
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-[#0a84ff1a] text-[#0a84ff]">
+                                        ${response.key_info.role_name}
+                                    </span>
+                                </div>
+                                <div class="bg-[#1c1c1e] rounded-lg p-4">
+                                    <code class="text-[#0a84ff] break-all font-mono">${response.key_info.key}</code>
+                                </div>
+                                <div class="flex items-center gap-2 text-[#ff9f0a] bg-[#ff9f0a1a] p-3 rounded-lg">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                    <span class="text-sm">Waiting for admin approval</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('status').innerHTML = keyDisplay;
+                    document.getElementById('status').classList.remove('hidden');
+                    lucide.createIcons();
+                    showToast('Key generated successfully');
+                } else {
+                    showToast(response.message, 'error');
+                }
+            }).fail(function() {
+                showToast('Failed to generate key', 'error');
+            });
+        }
+
+        function validateKey() {
+            const key = document.getElementById('key').value;
+            const remember = document.getElementById('rememberKey').classList.contains('active');
+
+            if (!key) {
+                showToast('Please enter a key', 'error');
+                return;
             }
-            
-            lucide.createIcons();
+
+            $.post('/validate_key', { 
+                key: key,
+                remember: remember 
+            }, function(response) {
+                if (response.status === 'success') {
+                    document.getElementById('keySection').style.display = 'none';
+                    document.getElementById('shareSection').classList.remove('hidden');
+                    document.getElementById('logoutBtn').classList.remove('hidden');
+                    updatePlanInfo(response.key_info);
+                    updateTokenCount();
+                    showToast('Key validated successfully');
+                } else {
+                    showToast(response.message, 'error');
+                }
+            });
         }
 
-        // Modal functions
-        function toggleModal(modalId, show) {
-            const modal = document.getElementById(modalId);
-            modal.style.display = show ? 'block' : 'none';
-        }
-
-        // Show/hide functions
-        const showStats = () => toggleModal('statsModal', true);
-        const closeStats = () => toggleModal('statsModal', false);
-        const showHelp = () => toggleModal('helpModal', true);
-        const closeHelp = () => toggleModal('helpModal', false);
-        const showQuickShare = () => toggleModal('quickShareModal', true);
-        const closeQuickShare = () => toggleModal('quickShareModal', false);
-
-        // Menu functions
-        function showMenu() {
-            document.querySelector('.side-menu').classList.add('active');
-            document.querySelector('.menu-backdrop').classList.add('active');
-        }
-
-        function closeMenu() {
-            document.querySelector('.side-menu').classList.remove('active');
-            document.querySelector('.menu-backdrop').classList.remove('active');
-        }
-
-        // Share functions
+        // Share Functions
         async function startShare() {
+            if (shareInProgress) return;
+
             const postId = document.getElementById('postId').value;
             const shareCount = parseInt(document.getElementById('shareCount').value);
             
@@ -593,6 +528,7 @@
                 return;
             }
 
+            shareInProgress = true;
             document.getElementById('progressSection').classList.remove('hidden');
             let completed = 0;
             
@@ -606,18 +542,95 @@
                     if (response.status === 'success') {
                         completed += response.success_count;
                         updateProgress(completed, shareCount);
-                        addActivity(`Shared ${response.success_count} times successfully`);
+                        showToast(`${response.success_count} shares completed`);
                     } else {
                         showToast(response.message, 'error');
-                        addActivity(response.message, 'error');
                         break;
                     }
                 } catch (error) {
                     showToast('An error occurred', 'error');
-                    addActivity('Share process failed', 'error');
                     break;
                 }
             }
+            
+            shareInProgress = false;
+        }
+
+        function quickShare(count) {
+            const postId = document.getElementById('quickPostId').value;
+            
+            if (!postId) {
+                showToast('Please enter a Post ID', 'error');
+                return;
+            }
+
+            $.post('/quick_share', {
+                post_id: postId,
+                share_count: count
+            }, function(response) {
+                if (response.status === 'success') {
+                    showToast(response.message);
+                    closeQuickShare();
+                    updateTokenCount();
+                } else {
+                    showToast(response.message, 'error');
+                }
+            });
+        }
+
+        // Progress Functions
+        function updateProgress(completed, total) {
+            const percentage = Math.floor((completed / total) * 100);
+            document.querySelector('.ios-progress-bar').style.width = `${percentage}%`;
+            document.getElementById('successCount').textContent = completed;
+            document.getElementById('failedCount').textContent = total - completed;
+            document.getElementById('remainingCount').textContent = total - completed;
+        }
+
+        // Modal Functions
+        function showQuickShare() {
+            document.getElementById('quickShareModal').classList.add('active');
+        }
+
+        function closeQuickShare() {
+            document.getElementById('quickShareModal').classList.remove('active');
+        }
+
+        function showHelp() {
+            document.getElementById('helpModal').classList.add('active');
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.remove('active');
+        }
+
+        // Utility Functions
+        function updateTokenCount() {
+            $.get('/get_token_count', function(response) {
+                if (response.status === 'success') {
+                    const count = response.count;
+                    document.getElementById('maxSharesLabel').textContent = `Available: ${count}`;
+                    document.getElementById('shareCount').max = count;
+                }
+            });
+        }
+
+        function updatePlanInfo(keyInfo) {
+            if (!keyInfo) return;
+            document.getElementById('planBadge').textContent = keyInfo.role_name;
+            if (keyInfo.role === 'premium') {
+                document.getElementById('planBadge').className = 
+                    'px-3 py-1 rounded-full text-xs font-medium bg-[#ffd60a1a] text-[#ffd60a]';
+            }
+        }
+
+        // Logout Function
+        function logout() {
+            $.post('/logout', function(response) {
+                if (response.status === 'success') {
+                    location.reload();
+                }
+            });
         }
 
         // Initialize on page load
@@ -625,6 +638,7 @@
             // Check session
             $.get('/check_session', function(response) {
                 if (response.status === 'success') {
+                    document.getElementById('key').value = response.key;
                     document.getElementById('keySection').style.display = 'none';
                     document.getElementById('shareSection').classList.remove('hidden');
                     document.getElementById('logoutBtn').classList.remove('hidden');
@@ -633,8 +647,14 @@
                 }
             });
 
-            // Update available tokens
-            updateTokenCount();
+            // Close modals on backdrop click
+            document.querySelectorAll('.ios-modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
         });
     </script>
 </body>
