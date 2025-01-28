@@ -11,11 +11,7 @@ import logging
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
@@ -25,10 +21,9 @@ app.permanent_session_lifetime = timedelta(days=30)
 
 # Constants
 KEYS_FILE = 'auth_keys.json'
-ADMIN_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"  # Default: "password"
+ADMIN_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
 TOKEN_FILE = 'tokens.txt'
 SHARE_STATS_FILE = 'share_stats.json'
-SHARE_HISTORY_FILE = 'share_history.json'
 MAX_TOKENS = 1000
 
 # Role configurations
@@ -37,13 +32,13 @@ ROLE_CONFIGS = {
         "share_limit": 250,
         "cooldown": 60,
         "description": "Free Plan",
-        "features": ["Basic sharing", "Limited tokens", "Standard support"]
+        "features": ["Basic sharing", "250 shares per request", "60s cooldown"]
     },
     "premium": {
         "share_limit": None,
         "cooldown": 0,
         "description": "Premium Plan",
-        "features": ["Unlimited sharing", "Priority tokens", "Premium support", "No cooldown"]
+        "features": ["Unlimited sharing", "No cooldown", "Priority support", "Quick share"]
     }
 }
 
@@ -51,8 +46,7 @@ def initialize_files():
     files = {
         KEYS_FILE: {},
         TOKEN_FILE: '',
-        SHARE_STATS_FILE: {'total_shares': 0, 'successful_shares': 0, 'failed_shares': 0},
-        SHARE_HISTORY_FILE: []
+        SHARE_STATS_FILE: {'total_shares': 0, 'successful_shares': 0, 'failed_shares': 0}
     }
     
     for file_path, default_content in files.items():
@@ -65,68 +59,21 @@ def initialize_files():
 
 initialize_files()
 
-class ShareHistory:
-    @staticmethod
-    def add_entry(key: str, post_id: str, success_count: int, failed_count: int):
-        try:
-            with open(SHARE_HISTORY_FILE, 'r') as f:
-                history = json.load(f)
-        except:
-            history = []
-            
-        entry = {
-            'key': key,
-            'post_id': post_id,
-            'success_count': success_count,
-            'failed_count': failed_count,
-            'timestamp': datetime.now().isoformat()
-        }
-        
-        history.insert(0, entry)
-        history = history[:100]  # Keep only last 100 entries
-        
-        with open(SHARE_HISTORY_FILE, 'w') as f:
-            json.dump(history, f)
-
-    @staticmethod
-    def get_history(key: str = None, limit: int = 10):
-        try:
-            with open(SHARE_HISTORY_FILE, 'r') as f:
-                history = json.load(f)
-                
-            if key:
-                history = [entry for entry in history if entry['key'] == key]
-            
-            return history[:limit]
-        except:
-            return []
-
 class ShareStats:
     @staticmethod
     def update(success=True):
         try:
             with open(SHARE_STATS_FILE, 'r') as f:
                 stats = json.load(f)
-                
             stats['total_shares'] += 1
             if success:
                 stats['successful_shares'] += 1
             else:
                 stats['failed_shares'] += 1
-            
             with open(SHARE_STATS_FILE, 'w') as f:
                 json.dump(stats, f)
         except Exception as e:
             logger.error(f"Error updating stats: {str(e)}")
-
-    @staticmethod
-    def get_stats():
-        try:
-            with open(SHARE_STATS_FILE, 'r') as f:
-                stats = json.load(f)
-            return stats
-        except:
-            return {'total_shares': 0, 'successful_shares': 0, 'failed_shares': 0}
 
 class KeyManager:
     def __init__(self):
@@ -146,6 +93,9 @@ class KeyManager:
             json.dump(self.keys, f, indent=4)
 
     def generate_key(self, role="free") -> str:
+        if role not in ROLE_CONFIGS:
+            role = "free"
+            
         key = secrets.token_hex(8)
         timestamp = datetime.now(self.ph_tz).strftime('%Y%m%d%H%M%S')
         full_key = f"{key}-{timestamp}"
@@ -157,7 +107,7 @@ class KeyManager:
             'shares_completed': 0,
             'last_used': None,
             'last_share': None,
-            'share_history': []
+            'remember_me': False
         }
         
         self._save_keys()
@@ -166,27 +116,25 @@ class KeyManager:
     def validate_key(self, key: str) -> tuple[bool, str]:
         if key not in self.keys:
             return False, "Invalid key"
-        
         key_data = self.keys[key]
         if not key_data['active']:
-            return False, "Key not approved by admin"
-            
+            return False, "Key not approved"
         return True, "Key is valid"
 
     def can_share(self, key: str, share_count: int) -> tuple[bool, str]:
         if key not in self.keys:
             return False, "Invalid key"
-
+            
         key_data = self.keys[key]
         if not key_data['active']:
             return False, "Key not approved"
-
+            
         role_config = ROLE_CONFIGS[key_data['role']]
         
         if role_config['share_limit'] and share_count > role_config['share_limit']:
-            return False, f"Share count exceeds plan limit ({role_config['share_limit']})"
-
-        if role_config['cooldown'] > 0 and key_data['last_share']:
+            return False, f"Share count exceeds limit ({role_config['share_limit']})"
+            
+        if role_config['cooldown'] > 0 and key_data.get('last_share'):
             last_share = datetime.strptime(key_data['last_share'], '%Y-%m-%d %H:%M:%S')
             last_share = self.ph_tz.localize(last_share)
             cooldown_end = last_share + timedelta(seconds=role_config['cooldown'])
@@ -194,7 +142,7 @@ class KeyManager:
             if datetime.now(self.ph_tz) < cooldown_end:
                 remaining = int((cooldown_end - datetime.now(self.ph_tz)).total_seconds())
                 return False, f"Please wait {remaining} seconds"
-
+                
         return True, "Allowed to share"
 
     def update_key_stats(self, key: str, shares_completed: int):
@@ -203,6 +151,11 @@ class KeyManager:
             current_time = datetime.now(self.ph_tz).strftime('%Y-%m-%d %H:%M:%S')
             self.keys[key]['last_used'] = current_time
             self.keys[key]['last_share'] = current_time
+            self._save_keys()
+
+    def set_remember_me(self, key: str, remember: bool):
+        if key in self.keys:
+            self.keys[key]['remember_me'] = remember
             self._save_keys()
 
     def get_key_info(self, key: str) -> dict:
@@ -218,12 +171,34 @@ class KeyManager:
                 'last_used': key_data['last_used'],
                 'created_at': key_data['created_at'],
                 'last_share': key_data['last_share'],
-                'features': role_config['features']
+                'features': role_config['features'],
+                'remember_me': key_data.get('remember_me', False)
             }
         return None
 
     def get_all_keys(self):
         return self.keys
+
+    def approve_key(self, key: str) -> bool:
+        if key in self.keys and not self.keys[key]['active']:
+            self.keys[key]['active'] = True
+            self._save_keys()
+            return True
+        return False
+
+    def revoke_key(self, key: str) -> bool:
+        if key in self.keys:
+            self.keys[key]['active'] = False
+            self._save_keys()
+            return True
+        return False
+
+    def delete_key(self, key: str) -> bool:
+        if key in self.keys:
+            del self.keys[key]
+            self._save_keys()
+            return True
+        return False
 
 def admin_required(f):
     @wraps(f)
@@ -250,7 +225,7 @@ async def share_post(token: str, post_id: str, target_shares: int):
     
     shares_completed = 0
     async with aiohttp.ClientSession() as session:
-        while shares_completed < target_shares:
+        for _ in range(target_shares):
             try:
                 async with session.post(
                     'https://graph.facebook.com/me/feed',
@@ -263,45 +238,47 @@ async def share_post(token: str, post_id: str, target_shares: int):
                     timeout=10
                 ) as response:
                     data = await response.json()
-                    
                     if 'id' in data:
                         shares_completed += 1
                         ShareStats.update(success=True)
                         continue
-                    
                     error = data.get('error', {})
                     error_code = error.get('code')
-                    
                     if error_code in [190, 463, 467]:
-                        return shares_completed, False
-                    if error_code == 4 or error_code == 506:
+                        return shares_completed, False  # Invalid token
+                    if error_code == 4:  # Rate limit
                         return shares_completed, True
-                    
-                    return shares_completed, True
-                    
             except Exception:
                 return shares_completed, True
-
+                
     return shares_completed, True
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/get_key_info', methods=['GET'])
-def get_key_info():
-    if 'key' not in session:
-        return jsonify({'status': 'error', 'message': 'No active key'})
-    
-    key_manager = KeyManager()
-    key_info = key_manager.get_key_info(session['key'])
-    if key_info:
-        key_info['share_history'] = ShareHistory.get_history(session['key'])
+@app.route('/generate_key', methods=['POST'])
+def generate_key():
+    try:
+        key_manager = KeyManager()
+        role = request.form.get('role', 'free')
+        new_key = key_manager.generate_key(role)
+        key_info = {
+            'key': new_key,
+            'role': role,
+            'role_name': ROLE_CONFIGS[role]['description'],
+            'share_limit': ROLE_CONFIGS[role]['share_limit'] or "Unlimited",
+            'cooldown': ROLE_CONFIGS[role]['cooldown'],
+            'features': ROLE_CONFIGS[role]['features']
+        }
         return jsonify({
             'status': 'success',
-            'key_info': key_info
+            'key_info': key_info,
+            'message': 'Key generated successfully. Waiting for admin approval.'
         })
-    return jsonify({'status': 'error', 'message': 'Invalid key'})
+    except Exception as e:
+        logger.error(f"Key generation error: {str(e)}")
+        return jsonify({'status': 'error', 'message': 'Failed to generate key'})
 
 @app.route('/validate_key', methods=['POST'])
 def validate_key():
@@ -315,29 +292,78 @@ def validate_key():
         session['key'] = key
         if remember:
             session.permanent = True
-        
+            key_manager.set_remember_me(key, True)
+            
         key_info = key_manager.get_key_info(key)
         return jsonify({
             'status': 'success',
-            'message': message,
+            'message': 'Key validated successfully',
             'key_info': key_info
         })
-    
+        
     return jsonify({'status': 'error', 'message': message})
 
-@app.route('/check_session', methods=['GET'])
-def check_session():
-    if 'key' in session:
-        key_manager = KeyManager()
-        is_valid, message = key_manager.validate_key(session['key'])
-        if is_valid:
-            key_info = key_manager.get_key_info(session['key'])
-            return jsonify({
-                'status': 'success',
-                'key': session['key'],
-                'key_info': key_info
-            })
-    return jsonify({'status': 'error'})
+@app.route('/quick_share', methods=['POST'])
+def quick_share():
+    if 'key' not in session:
+        return jsonify({'status': 'error', 'message': 'Please validate your key first'})
+
+    key_manager = KeyManager()
+    key = session['key']
+    post_id = request.form.get('post_id')
+    share_count = int(request.form.get('share_count', 50))
+    
+    can_share, message = key_manager.can_share(key, share_count)
+    if not can_share:
+        return jsonify({'status': 'error', 'message': message})
+
+    try:
+        with open(TOKEN_FILE, 'r') as f:
+            tokens = [line.strip() for line in f if line.strip()]
+
+        if not tokens:
+            return jsonify({'status': 'error', 'message': 'No tokens available'})
+
+        success = 0
+        valid_tokens = []
+        total_shares = min(share_count, len(tokens))
+
+        async def process_quick_share():
+            nonlocal success, valid_tokens
+            batch_tasks = []
+            
+            for token in tokens[:total_shares]:
+                task = asyncio.create_task(share_post(token, post_id, 1))
+                batch_tasks.append((token, task))
+            
+            for token, task in batch_tasks:
+                try:
+                    shares_done, is_valid = await task
+                    success += shares_done
+                    if is_valid:
+                        valid_tokens.append(token)
+                except Exception as e:
+                    logger.error(f"Share error: {str(e)}")
+                    continue
+
+        asyncio.run(process_quick_share())
+
+        with open(TOKEN_FILE, 'w') as f:
+            f.write('\n'.join(valid_tokens))
+
+        key_manager.update_key_stats(key, success)
+        
+        return jsonify({
+            'status': 'success',
+            'message': f'Quick share completed: {success} shares',
+            'success_count': success,
+            'available_tokens': len(valid_tokens),
+            'key_info': key_manager.get_key_info(key)
+        })
+
+    except Exception as e:
+        logger.error(f"Quick share error: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)})
 
 @app.route('/share', methods=['POST'])
 def share():
@@ -363,48 +389,40 @@ def share():
         if not tokens:
             return jsonify({'status': 'error', 'message': 'No tokens available'})
         
-        remaining_shares = share_count
         success = 0
         valid_tokens = []
         
         async def process_share_batch():
-            nonlocal remaining_shares, success, valid_tokens
+            nonlocal success, valid_tokens
+            batch_tasks = []
             
-            while remaining_shares > 0 and tokens:
-                batch_tasks = []
-                shares_per_token = max(1, remaining_shares // len(tokens))
-                
-                for token in tokens[:]:
-                    if remaining_shares <= 0:
-                        break
-                    batch_tasks.append((token, asyncio.create_task(
-                        share_post(token, post_id, shares_per_token)
-                    )))
-                
-                for token, task in batch_tasks:
-                    try:
-                        shares_done, is_valid = await task
-                        success += shares_done
-                        remaining_shares -= shares_done
-                        
-                        if is_valid:
-                            valid_tokens.append(token)
-                            
-                    except Exception as e:
-                        logger.error(f"Share error: {str(e)}")
-                        continue
-        
+            for token in tokens:
+                if success >= share_count:
+                    break
+                    
+                task = asyncio.create_task(share_post(token, post_id, 1))
+                batch_tasks.append((token, task))
+            
+            for token, task in batch_tasks:
+                try:
+                    shares_done, is_valid = await task
+                    success += shares_done
+                    if is_valid:
+                        valid_tokens.append(token)
+                except Exception as e:
+                    logger.error(f"Share error: {str(e)}")
+                    continue
+
         asyncio.run(process_share_batch())
         
         with open(TOKEN_FILE, 'w') as f:
             f.write('\n'.join(valid_tokens))
         
         key_manager.update_key_stats(key, success)
-        ShareHistory.add_entry(key, post_id, success, share_count - success)
         
         return jsonify({
             'status': 'success',
-            'message': f'Shares completed: {success}',
+            'message': f'Successfully completed {success} shares',
             'success_count': success,
             'available_tokens': len(valid_tokens),
             'key_info': key_manager.get_key_info(key)
@@ -413,6 +431,20 @@ def share():
     except Exception as e:
         logger.error(f"Share error: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)})
+
+@app.route('/check_session', methods=['GET'])
+def check_session():
+    if 'key' in session:
+        key_manager = KeyManager()
+        is_valid, message = key_manager.validate_key(session['key'])
+        if is_valid:
+            key_info = key_manager.get_key_info(session['key'])
+            return jsonify({
+                'status': 'success',
+                'key': session['key'],
+                'key_info': key_info
+            })
+    return jsonify({'status': 'error'})
 
 @app.route('/get_token_count', methods=['GET'])
 def get_token_count():
@@ -429,52 +461,6 @@ def get_token_count():
             'message': str(e)
         })
 
-@app.route('/get_share_history', methods=['GET'])
-def get_share_history():
-    key = session.get('key')
-    if not key:
-        return jsonify({'status': 'error', 'message': 'No active key'})
-    
-    limit = request.args.get('limit', 10, type=int)
-    history = ShareHistory.get_history(key, limit)
-    
-    return jsonify({
-        'status': 'success',
-        'history': history
-    })
-
-@app.route('/get_stats', methods=['GET'])
-def get_stats():
-    key = session.get('key')
-    if not key:
-        return jsonify({'status': 'error', 'message': 'No active key'})
-    
-    key_manager = KeyManager()
-    key_info = key_manager.get_key_info(key)
-    stats = ShareStats.get_stats()
-    
-    return jsonify({
-        'status': 'success',
-        'key_info': key_info,
-        'stats': stats
-    })
-
-@app.route('/quick_share', methods=['POST'])
-def quick_share():
-    if 'key' not in session:
-        return jsonify({'status': 'error', 'message': 'Please validate your key first'})
-    
-    key_manager = KeyManager()
-    key = session['key']
-    post_id = request.form.get('post_id')
-    share_count = int(request.form.get('share_count', 50))
-    
-    can_share, message = key_manager.can_share(key, share_count)
-    if not can_share:
-        return jsonify({'status': 'error', 'message': message})
-    
-    return share()
-
 @app.route('/admin')
 @admin_required
 def admin():
@@ -484,7 +470,7 @@ def admin():
         
         with open(TOKEN_FILE, 'r') as f:
             tokens = f.read()
-        
+            
         stats = ShareStats.get_stats()
         
         active_keys = sum(1 for k in keys.values() if k['active'])
@@ -496,8 +482,6 @@ def admin():
             if key_data['active']:
                 role_counts[key_data['role']] += 1
         
-        share_history = ShareHistory.get_history(limit=50)
-        
         return render_template('admin.html',
             keys=keys,
             tokens=tokens,
@@ -507,8 +491,7 @@ def admin():
             current_tokens=current_tokens,
             max_tokens=MAX_TOKENS,
             premium_keys=role_counts['premium'],
-            free_keys=role_counts['free'],
-            share_history=share_history
+            free_keys=role_counts['free']
         )
     except Exception as e:
         logger.error(f"Admin page error: {str(e)}")
@@ -529,9 +512,7 @@ def admin_login():
 @admin_required
 def approve_key(key):
     key_manager = KeyManager()
-    if key in key_manager.keys and not key_manager.keys[key]['active']:
-        key_manager.keys[key]['active'] = True
-        key_manager._save_keys()
+    if key_manager.approve_key(key):
         flash('Key approved successfully')
     else:
         flash('Failed to approve key')
@@ -541,9 +522,7 @@ def approve_key(key):
 @admin_required
 def revoke_key(key):
     key_manager = KeyManager()
-    if key in key_manager.keys:
-        key_manager.keys[key]['active'] = False
-        key_manager._save_keys()
+    if key_manager.revoke_key(key):
         flash('Key revoked successfully')
     else:
         flash('Failed to revoke key')
@@ -553,28 +532,10 @@ def revoke_key(key):
 @admin_required
 def delete_key(key):
     key_manager = KeyManager()
-    if key in key_manager.keys:
-        del key_manager.keys[key]
-        key_manager._save_keys()
+    if key_manager.delete_key(key):
         flash('Key deleted successfully')
     else:
         flash('Failed to delete key')
-    return redirect(url_for('admin'))
-
-@app.route('/admin/update_role/<key>/<role>')
-@admin_required
-def update_role(key, role):
-    if role not in ROLE_CONFIGS:
-        flash('Invalid role specified')
-        return redirect(url_for('admin'))
-    
-    key_manager = KeyManager()
-    if key in key_manager.keys:
-        key_manager.keys[key]['role'] = role
-        key_manager._save_keys()
-        flash(f'Role updated to {role} successfully')
-    else:
-        flash('Failed to update role')
     return redirect(url_for('admin'))
 
 @app.route('/admin/tokens', methods=['POST'])
