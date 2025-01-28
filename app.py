@@ -24,7 +24,10 @@ KEYS_FILE = 'auth_keys.json'
 ADMIN_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
 TOKEN_FILE = 'tokens.txt'
 SHARE_STATS_FILE = 'share_stats.json'
+BAN_FILE = 'banned_ips.json'
 MAX_TOKENS = 1000
+MAX_KEY_ATTEMPTS = 3
+BAN_DURATION_HOURS = 24
 
 # Role configurations
 ROLE_CONFIGS = {
@@ -41,39 +44,84 @@ ROLE_CONFIGS = {
 }
 
 def initialize_files():
-    default_stats = {
-        'total_shares': 0,
-        'successful_shares': 0,
-        'failed_shares': 0,
-        'last_updated': datetime.now().isoformat()
+    files = {
+        KEYS_FILE: {},
+        TOKEN_FILE: '',
+        SHARE_STATS_FILE: {'total_shares': 0, 'successful_shares': 0, 'failed_shares': 0},
+        BAN_FILE: {}
     }
-
-    if not os.path.exists(KEYS_FILE):
-        with open(KEYS_FILE, 'w') as f:
-            json.dump({}, f)
-
-    if not os.path.exists(TOKEN_FILE):
-        with open(TOKEN_FILE, 'w') as f:
-            f.write('')
-
-    if not os.path.exists(SHARE_STATS_FILE):
-        with open(SHARE_STATS_FILE, 'w') as f:
-            json.dump(default_stats, f)
+    
+    for file_path, default_content in files.items():
+        if not os.path.exists(file_path):
+            with open(file_path, 'w') as f:
+                if isinstance(default_content, (dict, list)):
+                    json.dump(default_content, f)
+                else:
+                    f.write(default_content)
 
 initialize_files()
+
+class BanManager:
+    @staticmethod
+    def check_ban(ip_address: str) -> tuple[bool, str]:
+        try:
+            with open(BAN_FILE, 'r') as f:
+                bans = json.load(f)
+            
+            if ip_address in bans:
+                ban_data = bans[ip_address]
+                ban_until = datetime.fromisoformat(ban_data['until'])
+                
+                if datetime.now() < ban_until:
+                    remaining = ban_until - datetime.now()
+                    hours = remaining.total_seconds() / 3600
+                    return True, f"You are banned for {hours:.1f} more hours"
+                else:
+                    del bans[ip_address]
+                    with open(BAN_FILE, 'w') as f:
+                        json.dump(bans, f)
+            
+            return False, ""
+        except:
+            return False, ""
+
+    @staticmethod
+    def add_attempt(ip_address: str):
+        try:
+            with open(BAN_FILE, 'r') as f:
+                bans = json.load(f)
+            
+            if ip_address not in bans:
+                bans[ip_address] = {
+                    'attempts': 1,
+                    'until': None
+                }
+            else:
+                if bans[ip_address]['attempts'] < MAX_KEY_ATTEMPTS:
+                    bans[ip_address]['attempts'] += 1
+                
+                if bans[ip_address]['attempts'] >= MAX_KEY_ATTEMPTS:
+                    ban_until = datetime.now() + timedelta(hours=BAN_DURATION_HOURS)
+                    bans[ip_address]['until'] = ban_until.isoformat()
+            
+            with open(BAN_FILE, 'w') as f:
+                json.dump(bans, f)
+                
+            return bans[ip_address]['attempts']
+        except:
+            return 0
 
 class ShareStats:
     @staticmethod
     def update(success=True):
         try:
-            stats = ShareStats.get_stats()
+            with open(SHARE_STATS_FILE, 'r') as f:
+                stats = json.load(f)
             stats['total_shares'] += 1
             if success:
                 stats['successful_shares'] += 1
             else:
                 stats['failed_shares'] += 1
-            stats['last_updated'] = datetime.now().isoformat()
-            
             with open(SHARE_STATS_FILE, 'w') as f:
                 json.dump(stats, f)
         except Exception as e:
@@ -83,15 +131,12 @@ class ShareStats:
     def get_stats():
         try:
             with open(SHARE_STATS_FILE, 'r') as f:
-                stats = json.load(f)
-            return stats
+                return json.load(f)
         except:
-            # Return default stats if file doesn't exist or is corrupted
             return {
                 'total_shares': 0,
                 'successful_shares': 0,
-                'failed_shares': 0,
-                'last_updated': datetime.now().isoformat()
+                'failed_shares': 0
             }
 
 class KeyManager:
@@ -114,7 +159,7 @@ class KeyManager:
     def generate_key(self, role="free") -> str:
         if role not in ROLE_CONFIGS:
             role = "free"
-        
+            
         key = secrets.token_hex(8)
         timestamp = datetime.now(self.ph_tz).strftime('%Y%m%d%H%M%S')
         full_key = f"{key}-{timestamp}"
@@ -125,8 +170,7 @@ class KeyManager:
             'created_at': datetime.now(self.ph_tz).strftime('%Y-%m-%d %H:%M:%S'),
             'shares_completed': 0,
             'last_used': None,
-            'last_share': None,
-            'remember_me': False
+            'last_share': None
         }
         
         self._save_keys()
@@ -274,19 +318,46 @@ def index():
 @app.route('/generate_key', methods=['POST'])
 def generate_key():
     try:
+        # Get IP address
+        ip_address = request.remote_addr
+        
+        # Check if IP is banned
+        is_banned, ban_message = BanManager.check_ban(ip_address)
+        if is_banned:
+            return jsonify({
+                'status': 'error',
+                'message': ban_message
+            })
+
         key_manager = KeyManager()
-        role = request.form.get('role', 'free')
-        if role not in ROLE_CONFIGS:
-            role = 'free'
-            
-        new_key = key_manager.generate_key(role)
+        key_type = request.form.get('type', 'free')
+        admin_password = request.form.get('admin_password', '')
+
+        if key_type == 'premium':
+            if hashlib.sha256(admin_password.encode()).hexdigest() != ADMIN_HASH:
+                attempts = BanManager.add_attempt(ip_address)
+                remaining_attempts = MAX_KEY_ATTEMPTS - attempts
+                
+                if remaining_attempts > 0:
+                    return jsonify({
+                        'status': 'error',
+                        'message': f'Invalid admin password. {remaining_attempts} attempts remaining.'
+                    })
+                else:
+                    return jsonify({
+                        'status': 'error',
+                        'message': f'You have been banned for {BAN_DURATION_HOURS} hours due to too many attempts.'
+                    })
+
+        new_key = key_manager.generate_key('premium' if key_type == 'premium' else 'free')
         key_info = {
             'key': new_key,
-            'role': role,
-            'role_name': ROLE_CONFIGS[role]['description'],
-            'share_limit': ROLE_CONFIGS[role]['share_limit'] or "Unlimited",
-            'cooldown': ROLE_CONFIGS[role]['cooldown']
+            'role': 'premium' if key_type == 'premium' else 'free',
+            'role_name': ROLE_CONFIGS['premium' if key_type == 'premium' else 'free']['description'],
+            'share_limit': ROLE_CONFIGS['premium' if key_type == 'premium' else 'free']['share_limit'] or "Unlimited",
+            'cooldown': ROLE_CONFIGS['premium' if key_type == 'premium' else 'free']['cooldown']
         }
+        
         return jsonify({
             'status': 'success',
             'message': 'Key generated successfully. Waiting for admin approval.',
@@ -366,7 +437,6 @@ def share():
             for token in tokens:
                 if success >= share_count:
                     break
-                    
                 task = asyncio.create_task(share_post(token, post_id, 1))
                 batch_tasks.append((token, task))
             
@@ -408,13 +478,10 @@ def quick_share():
     key = session['key']
     post_id = request.form.get('post_id')
     share_count = int(request.form.get('share_count', 50))
-    
+
     can_share, message = key_manager.can_share(key, share_count)
     if not can_share:
         return jsonify({'status': 'error', 'message': message})
-
-    if not post_id.isdigit():
-        return jsonify({'status': 'error', 'message': 'Invalid post ID'})
 
     try:
         with open(TOKEN_FILE, 'r') as f:
@@ -451,7 +518,7 @@ def quick_share():
             f.write('\n'.join(valid_tokens))
 
         key_manager.update_key_stats(key, success)
-        
+
         return jsonify({
             'status': 'success',
             'message': f'Quick share completed: {success} shares',
@@ -489,27 +556,17 @@ def admin():
         with open(TOKEN_FILE, 'r') as f:
             tokens = f.read()
             
-        stats = ShareStats.get_stats()
-        
         active_keys = sum(1 for k in keys.values() if k['active'])
         pending_keys = sum(1 for k in keys.values() if not k['active'])
         current_tokens = len([t for t in tokens.split('\n') if t.strip()])
         
-        role_counts = {'premium': 0, 'free': 0}
-        for key_data in keys.values():
-            if key_data['active']:
-                role_counts[key_data['role']] += 1
-        
         return render_template('admin.html',
             keys=keys,
             tokens=tokens,
-            stats=stats,
             active_keys=active_keys,
             pending_keys=pending_keys,
             current_tokens=current_tokens,
-            max_tokens=MAX_TOKENS,
-            premium_keys=role_counts['premium'],
-            free_keys=role_counts['free']
+            max_tokens=MAX_TOKENS
         )
     except Exception as e:
         logger.error(f"Admin page error: {str(e)}")
@@ -525,6 +582,29 @@ def admin_login():
             return redirect(url_for('admin'))
         flash('Invalid password')
     return render_template('admin_login.html')
+
+@app.route('/admin/tokens', methods=['POST'])
+@admin_required
+def update_tokens():
+    tokens = request.form.get('tokens', '')
+    token_list = [t.strip() for t in tokens.split('\n') if t.strip()]
+    
+    if len(token_list) > MAX_TOKENS:
+        flash(f'Maximum {MAX_TOKENS} tokens allowed')
+        return redirect(url_for('admin'))
+    
+    try:
+        with open(TOKEN_FILE, 'w') as f:
+            f.write('\n'.join(token_list))
+        flash(f'Successfully updated {len(token_list)} tokens')
+    except Exception as e:
+        flash(f'Failed to update tokens: {str(e)}')
+    return redirect(url_for('admin'))
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({'status': 'success'})
 
 @app.route('/admin/approve_key/<key>')
 @admin_required
@@ -555,38 +635,6 @@ def delete_key(key):
     else:
         flash('Failed to delete key')
     return redirect(url_for('admin'))
-
-@app.route('/admin/tokens', methods=['POST'])
-@admin_required
-def update_tokens():
-    tokens = request.form.get('tokens', '')
-    token_list = [t.strip() for t in tokens.split('\n') if t.strip()]
-    
-    if len(token_list) > MAX_TOKENS:
-        flash(f'Maximum {MAX_TOKENS} tokens allowed')
-        return redirect(url_for('admin'))
-    
-    try:
-        with open(TOKEN_FILE, 'w') as f:
-            f.write('\n'.join(token_list))
-        flash(f'Successfully updated {len(token_list)} tokens')
-    except Exception as e:
-        flash(f'Failed to update tokens: {str(e)}')
-    return redirect(url_for('admin'))
-
-@app.route('/logout', methods=['POST'])
-def logout():
-    session.clear()
-    return jsonify({'status': 'success'})
-
-@app.errorhandler(404)
-def not_found_error(error):
-    return render_template('404.html'), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    logger.error(f"Internal server error: {str(error)}")
-    return render_template('500.html'), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
