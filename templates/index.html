@@ -72,7 +72,6 @@
             transform: scale(0.96);
         }
 
-        /* Switch Component */
         .ios-switch {
             width: 51px;
             height: 31px;
@@ -103,7 +102,6 @@
             transform: translateX(20px);
         }
 
-        /* Progress Bar */
         .ios-progress {
             background-color: var(--input-bg);
             border-radius: 8px;
@@ -117,7 +115,6 @@
             transition: width 0.3s ease;
         }
 
-        /* Quick Action Button */
         .quick-action {
             position: fixed;
             bottom: 24px;
@@ -137,7 +134,6 @@
             transform: scale(0.92);
         }
 
-        /* Toast Notifications */
         .ios-toast {
             position: fixed;
             bottom: 90px;
@@ -168,42 +164,6 @@
             }
         }
 
-        /* Modal */
-        .ios-modal {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .ios-modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            width: 100%;
-            max-width: 400px;
-            transform: scale(0.95);
-            transition: transform 0.3s ease;
-        }
-
-        .ios-modal.active .modal-content {
-            transform: scale(1);
-        }
-
-        /* Stats Card */
         .stats-card {
             background: linear-gradient(145deg, var(--card-bg), var(--input-bg));
             border-radius: 12px;
@@ -211,14 +171,8 @@
             text-align: center;
         }
 
-        /* Responsive Design */
         @media (max-width: 640px) {
             .ios-card {
-                margin: 12px;
-                border-radius: 12px;
-            }
-
-            .modal-content {
                 margin: 12px;
             }
 
@@ -243,14 +197,7 @@
                         <span class="text-xs text-[#8e8e93]">v2.0</span>
                     </div>
                 </div>
-
                 <div class="flex items-center space-x-4">
-                    <button onclick="showStats()" class="p-2 rounded-xl hover:bg-[#ffffff1a] transition-colors">
-                        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
-                    </button>
-                    <button onclick="showSettings()" class="p-2 rounded-xl hover:bg-[#ffffff1a] transition-colors">
-                        <i data-lucide="settings" class="w-5 h-5"></i>
-                    </button>
                     <a href="/admin" class="p-2 rounded-xl hover:bg-[#ffffff1a] transition-colors">
                         <i data-lucide="shield" class="w-5 h-5"></i>
                     </a>
@@ -285,10 +232,14 @@
                     Validate Key
                 </button>
 
-                <div class="flex justify-center">
-                    <button onclick="generateKey()" 
+                <div class="flex justify-center gap-4">
+                    <button onclick="generateKey('free')" 
                             class="text-[#0a84ff] text-sm hover:opacity-80 transition-opacity">
-                        Generate new key
+                        Generate Free Key
+                    </button>
+                    <button onclick="generateKey('premium')" 
+                            class="text-[#ffd60a] text-sm hover:opacity-80 transition-opacity">
+                        Generate Premium Key
                     </button>
                 </div>
             </div>
@@ -350,74 +301,53 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Quick Share FAB -->
-            <button onclick="showQuickShare()" class="quick-action">
-                <i data-lucide="zap" class="w-6 h-6 text-white"></i>
-            </button>
         </div>
 
         <!-- Status Section -->
         <div id="status" class="hidden"></div>
     </main>
 
-    <!-- Quick Share Modal -->
-    <div id="quickShareModal" class="ios-modal">
-        <div class="modal-content p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold">Quick Share</h2>
-                <button onclick="closeQuickShare()" class="text-[#8e8e93] hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
+    <!-- Quick Action Button -->
+    <button onclick="showQuickShare()" class="quick-action">
+        <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+    </button>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+        <div class="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] space-y-4 bg-[#1c1c1e] p-6 rounded-xl border border-[#38383a] shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold">How to Find Post ID</h3>
+                <button onclick="closeHelp()" class="text-[#8e8e93]">
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-
-            <div class="space-y-4">
-                <input type="text" id="quickPostId" placeholder="Enter Facebook Post ID" class="ios-input">
-                
-                <div class="grid grid-cols-3 gap-3">
-                    <button onclick="quickShare(50)" class="ios-button text-white py-3">
-                        50
-                    </button>
-                    <button onclick="quickShare(100)" class="ios-button text-white py-3">
-                        100
-                    </button>
-                    <button onclick="quickShare(250)" class="ios-button text-white py-3">
-                        250
-                    </button>
-                </div>
+            <ol class="space-y-3 text-[#8e8e93]">
+                <li>1. Open the Facebook post you want to share</li>
+                <li>2. Look at the URL in your browser</li>
+                <li>3. Find the number after "/posts/"</li>
+            </ol>
+            <div class="bg-[#2c2c2e] rounded-lg p-4">
+                <p class="text-[#8e8e93] mb-2">Example:</p>
+                <code class="text-[#0a84ff] break-all">facebook.com/username/posts/123456789</code>
+                <p class="text-[#8e8e93] mt-2">ID: <span class="text-[#0a84ff]">123456789</span></p>
             </div>
         </div>
     </div>
 
-    <!-- Help Modal -->
-    <div id="helpModal" class="ios-modal">
-        <div class="modal-content p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold">How to Find Post ID</h2>
-                <button onclick="closeHelp()" class="text-[#8e8e93] hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
+    <!-- Quick Share Modal -->
+    <div id="quickShareModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+        <div class="fixed left-[50%] bottom-8 z-50 w-full max-w-lg translate-x-[-50%] space-y-4 bg-[#1c1c1e] p-6 rounded-xl border border-[#38383a] shadow-xl mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Quick Share</h3>
+                <button onclick="closeQuickShare()" class="text-[#8e8e93]">
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <div class="space-y-4">
-                <ol class="space-y-3 text-[#8e8e93]">
-                    <li class="flex gap-3">
-                        <span class="w-6 h-6 rounded-full bg-[#0a84ff1a] text-[#0a84ff] flex items-center justify-center flex-shrink-0">1</span>
-                        <span>Open the Facebook post you want to share</span>
-                    </li>
-                    <li class="flex gap-3">
-                        <span class="w-6 h-6 rounded-full bg-[#0a84ff1a] text-[#0a84ff] flex items-center justify-center flex-shrink-0">2</span>
-                        <span>Look at the URL in your browser</span>
-                    </li>
-                    <li class="flex gap-3">
-                        <span class="w-6 h-6 rounded-full bg-[#0a84ff1a] text-[#0a84ff] flex items-center justify-center flex-shrink-0">3</span>
-                        <span>Find the number after "/posts/"</span>
-                    </li>
-                </ol>
-                <div class="bg-[#1c1c1e] rounded-lg p-4 mt-4">
-                    <p class="text-[#8e8e93] mb-2">Example URL:</p>
-                    <code class="text-[#0a84ff] text-sm break-all">https://facebook.com/username/posts/123456789</code>
-                    <p class="text-[#8e8e93] mt-2">Post ID would be: <span class="text-[#0a84ff]">123456789</span></p>
-                </div>
+            <input type="text" id="quickPostId" placeholder="Enter Post ID" class="ios-input mb-4">
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="quickShare(50)" class="ios-button">50</button>
+                <button onclick="quickShare(100)" class="ios-button">100</button>
+                <button onclick="quickShare(250)" class="ios-button">250</button>
             </div>
         </div>
     </div>
@@ -425,9 +355,6 @@
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
-
-        // Global variables
-        let shareInProgress = false;
 
         // UI Functions
         function showToast(message, type = 'success') {
@@ -452,42 +379,85 @@
             }, 3000);
         }
 
-        // Key Management Functions
-        function generateKey() {
-            showToast('Generating key...', 'info');
-
-            $.post('/generate_key', function(response) {
-                if (response.status === 'success') {
-                    const keyDisplay = `
-                        <div class="ios-card p-6 mb-4">
-                            <div class="space-y-4">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[#8e8e93]">Your Key:</span>
-                                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-[#0a84ff1a] text-[#0a84ff]">
-                                        ${response.key_info.role_name}
-                                    </span>
-                                </div>
-                                <div class="bg-[#1c1c1e] rounded-lg p-4">
-                                    <code class="text-[#0a84ff] break-all font-mono">${response.key_info.key}</code>
-                                </div>
-                                <div class="flex items-center gap-2 text-[#ff9f0a] bg-[#ff9f0a1a] p-3 rounded-lg">
-                                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
-                                    <span class="text-sm">Waiting for admin approval</span>
+        // Key Management
+        function generateKey(type = 'free') {
+            if (type === 'premium') {
+                const adminPassword = prompt('Enter admin password for premium key:');
+                if (!adminPassword) return;
+                
+                showToast('Generating premium key...', 'info');
+                
+                $.post('/generate_key', {
+                    type: 'premium',
+                    admin_password: adminPassword
+                }, function(response) {
+                    if (response.status === 'success') {
+                        const keyDisplay = `
+                            <div class="ios-card p-6 mb-4">
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[#8e8e93]">Your Premium Key:</span>
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-[#ffd60a1a] text-[#ffd60a]">
+                                            Premium Plan
+                                        </span>
+                                    </div>
+                                    <div class="bg-[#1c1c1e] rounded-lg p-4">
+                                        <code class="text-[#0a84ff] break-all font-mono">${response.key_info.key}</code>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-[#ff9f0a] bg-[#ff9f0a1a] p-3 rounded-lg">
+                                        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                        <span class="text-sm">Waiting for admin approval</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        `;
 
-                    document.getElementById('status').innerHTML = keyDisplay;
-                    document.getElementById('status').classList.remove('hidden');
-                    lucide.createIcons();
-                    showToast('Key generated successfully');
-                } else {
-                    showToast(response.message, 'error');
-                }
-            }).fail(function() {
-                showToast('Failed to generate key', 'error');
-            });
+                        document.getElementById('status').innerHTML = keyDisplay;
+                        document.getElementById('status').classList.remove('hidden');
+                        lucide.createIcons();
+                        showToast('Premium key generated successfully');
+                    } else {
+                        showToast(response.message, 'error');
+                    }
+                }).fail(function() {
+                    showToast('Failed to generate key', 'error');
+                });
+            } else {
+                showToast('Generating free key...', 'info');
+                
+                $.post('/generate_key', { type: 'free' }, function(response) {
+                    if (response.status === 'success') {
+                        const keyDisplay = `
+                            <div class="ios-card p-6 mb-4">
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[#8e8e93]">Your Key:</span>
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-[#0a84ff1a] text-[#0a84ff]">
+                                            Free Plan
+                                        </span>
+                                    </div>
+                                    <div class="bg-[#1c1c1e] rounded-lg p-4">
+                                        <code class="text-[#0a84ff] break-all font-mono">${response.key_info.key}</code>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-[#ff9f0a] bg-[#ff9f0a1a] p-3 rounded-lg">
+                                        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                        <span class="text-sm">Waiting for admin approval</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        document.getElementById('status').innerHTML = keyDisplay;
+                        document.getElementById('status').classList.remove('hidden');
+                        lucide.createIcons();
+                        showToast('Key generated successfully');
+                    } else {
+                        showToast(response.message, 'error');
+                    }
+                }).fail(function() {
+                    showToast('Failed to generate key', 'error');
+                });
+            }
         }
 
         function validateKey() {
@@ -530,27 +500,22 @@
 
             shareInProgress = true;
             document.getElementById('progressSection').classList.remove('hidden');
-            let completed = 0;
             
-            while (completed < shareCount) {
-                try {
-                    const response = await $.post('/share', {
-                        post_id: postId,
-                        share_count: shareCount - completed
-                    });
+            try {
+                const response = await $.post('/share', {
+                    post_id: postId,
+                    share_count: shareCount
+                });
 
-                    if (response.status === 'success') {
-                        completed += response.success_count;
-                        updateProgress(completed, shareCount);
-                        showToast(`${response.success_count} shares completed`);
-                    } else {
-                        showToast(response.message, 'error');
-                        break;
-                    }
-                } catch (error) {
-                    showToast('An error occurred', 'error');
-                    break;
+                if (response.status === 'success') {
+                    updateProgress(response.success_count, shareCount);
+                    showToast(`${response.success_count} shares completed`);
+                    updateTokenCount();
+                } else {
+                    showToast(response.message, 'error');
                 }
+            } catch (error) {
+                showToast('An error occurred', 'error');
             }
             
             shareInProgress = false;
@@ -587,23 +552,6 @@
             document.getElementById('remainingCount').textContent = total - completed;
         }
 
-        // Modal Functions
-        function showQuickShare() {
-            document.getElementById('quickShareModal').classList.add('active');
-        }
-
-        function closeQuickShare() {
-            document.getElementById('quickShareModal').classList.remove('active');
-        }
-
-        function showHelp() {
-            document.getElementById('helpModal').classList.add('active');
-        }
-
-        function closeHelp() {
-            document.getElementById('helpModal').classList.remove('active');
-        }
-
         // Utility Functions
         function updateTokenCount() {
             $.get('/get_token_count', function(response) {
@@ -617,11 +565,28 @@
 
         function updatePlanInfo(keyInfo) {
             if (!keyInfo) return;
-            document.getElementById('planBadge').textContent = keyInfo.role_name;
+            const planBadge = document.getElementById('planBadge');
+            planBadge.textContent = keyInfo.role_name;
             if (keyInfo.role === 'premium') {
-                document.getElementById('planBadge').className = 
-                    'px-3 py-1 rounded-full text-xs font-medium bg-[#ffd60a1a] text-[#ffd60a]';
+                planBadge.className = 'px-3 py-1 rounded-full text-xs font-medium bg-[#ffd60a1a] text-[#ffd60a]';
             }
+        }
+
+        // Modal Functions
+        function showQuickShare() {
+            document.getElementById('quickShareModal').classList.remove('hidden');
+        }
+
+        function closeQuickShare() {
+            document.getElementById('quickShareModal').classList.add('hidden');
+        }
+
+        function showHelp() {
+            document.getElementById('helpModal').classList.remove('hidden');
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.add('hidden');
         }
 
         // Logout Function
@@ -633,7 +598,9 @@
             });
         }
 
-        // Initialize on page load
+        // Initialize
+        let shareInProgress = false;
+
         document.addEventListener('DOMContentLoaded', () => {
             // Check session
             $.get('/check_session', function(response) {
@@ -648,10 +615,10 @@
             });
 
             // Close modals on backdrop click
-            document.querySelectorAll('.ios-modal').forEach(modal => {
+            document.querySelectorAll('.modal-backdrop').forEach(modal => {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
-                        modal.classList.remove('active');
+                        modal.classList.add('hidden');
                     }
                 });
             });
