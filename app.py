@@ -19,7 +19,6 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 app.permanent_session_lifetime = timedelta(days=30)
 
-# Constants
 KEYS_FILE = 'auth_keys.json'
 ADMIN_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
 TOKEN_FILE = 'tokens.txt'
@@ -29,7 +28,6 @@ MAX_TOKENS = 1000
 MAX_KEY_ATTEMPTS = 3
 BAN_DURATION_HOURS = 24
 
-# Role configurations
 ROLE_CONFIGS = {
     "free": {
         "share_limit": 250,
@@ -318,10 +316,8 @@ def index():
 @app.route('/generate_key', methods=['POST'])
 def generate_key():
     try:
-        # Get IP address
         ip_address = request.remote_addr
         
-        # Check if IP is banned
         is_banned, ban_message = BanManager.check_ban(ip_address)
         if is_banned:
             return jsonify({
